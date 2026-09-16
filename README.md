@@ -28,7 +28,7 @@ Early setup phase — tech stack and architecture details are being finalized in
 - [Configuration management and contribution workflow](CONTRIBUTING.md)
 - [Initial task backlog](https://github.com/Santi852/Cen3031-Proj-1/issues)
 
-**Proposed team name:** StackSprint.
+**Team name:** StackSprint.
 
 | Member | Role |
 | --- | --- |
@@ -36,4 +36,4 @@ Early setup phase — tech stack and architecture details are being finalized in
 | Matias Camaran | Proposed project coordinator and backend lead |
 | Hussain | Proposed integrations and quality lead |
 
-The proposal recommends TypeScript, React, Node.js/Express, and PostgreSQL. Team-name, stack, and remaining role decisions await team agreement; the application has not yet been scaffolded. Review the proposal against the instructor's challenge statement and the assigned textbook before submission.
+The proposal recommends TypeScript, React, Node.js, and PostgreSQL. Stack and remaining role decisions await team agreement; the application has not yet been scaffolded. Review the proposal against the instructor's challenge statement and the assigned textbook before submission.

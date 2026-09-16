@@ -1,214 +1,187 @@
-# StackSprint
+# STACKSPRINT | CEN3031
 
-Development Environment and Project Proposal Plan | CEN3031 | September 15, 2026
+Repository Setup and Project Proposal Plan
 
-Team: Santiago Ramirez, Matias Camaran, and Hussain.
+CEN3031 - LeetCode Productivity App
 
-Proposal status: StackSprint is the proposed team name. Santiago leads frontend development as requested; the remaining role assignments and technology selections below are proposed for team agreement.
+September 15, 2026
 
+**Team:** Santiago Ramirez, Matias Camaran, and Hussain.
+
+**Proposal status:** Project name and Santiago's frontend role are confirmed; confirm remaining roles and details before submission.
 
 ## 1. Problem and proposed solution
 
-Students preparing for technical interviews often practice inconsistently, have difficulty comparing progress with friends, and track activity across separate tools. StackSprint proposes a web application that combines friendly competition, progress visibility, and solution discussions to support a consistent coding-practice routine.
+A student practicing for technical interviews may practice sporadically, find it difficult to compare achievement to peers, and track their activity with disjointed tools. StackSprint will combine friendly competition, visible progress, and social discussion of solutions to encourage a daily coding-practice habit. While our users may maintain multiple activity sources their desired goal is consistent improvement towards passing technical interviews.
 
-The solution follows the existing repository concept: weekly leaderboards, discussions that unlock after a problem is solved, and a dashboard combining practice and development activity. The intended users are students and early-career developers preparing for technical interviews.
+The solution extends the students' current repository: Weekly rankings show progress among friends, problems can be discussed after completion, and both practice activity and project development are visible on a dashboard. The intended users are students and other developers preparing for technical interviews.
 
-Challenge alignment: This proposal interprets the challenge as improving motivation and visibility during technical interview preparation. The separate instructor challenge statement was not provided; the team must verify this interpretation against that statement before submission.
-
+**Challenge alignment:** Interpretation matches coding skills and visibility. Must confirm the instructor-supplied challenge statement matches before submitting.
 
 ## 2. Project vision
 
-For students and early-career developers who need motivation and a clear view of their technical interview preparation, StackSprint is a social coding-practice companion that combines weekly competition, progress tracking, and discussions unlocked by verified problem completion. Unlike practicing alone with separate activity trackers, our product brings peer accountability and learning progress into one shared experience.
+StackSprint brings teammates together to build consistent coding skills before technical interviews.
 
-This vision uses the common Geoffrey Moore positioning structure. The team should compare its wording with the exact template in Chapter 1 of the assigned textbook, which was not supplied.
+For students and early-career developers who need motivation and a clear view of their technical interview preparation, StackSprint is a social coding-practice companion that brings weekly competition, progress tracking, and discussions unlocked by verified problem completion. Unlike learning in isolation while checking separate activity trackers, StackSprint's weekly leaderboard and dashboard gamify repetitions into one cohesive learning journey.
 
+Check vision against the provided template in the textbook before submission.
 
 ## 3. Team roles and collaboration
 
 | Member | Primary responsibility |
-
 | --- | --- |
+| Santiago Ramirez | Handles frontend design details, React components, accessibility, dashboard and leaderboard pages, and integration with the backend API. |
+| Matias Camaran | Proposed Project Coordinator and Backend Lead. Track defined scope, task progress, API contract, database model, and authentication. Leads the development and release process. |
+| Hussain | Proposed integrations and testing lead. Works on data-source feasibility and connector interfaces, activity integrations, automated testing, end-to-end integration checks, and monitoring risks. |
 
-| Santiago Ramirez | Frontend lead: interface design, React components, dashboard and leaderboard pages, accessibility, and frontend integration. |
-
-| Matias Camaran | Proposed project coordinator and backend lead: scope, task tracking, API design, database model, authentication, and release coordination. |
-
-| Hussain | Proposed integrations and quality lead: data-source feasibility, activity connectors, automated tests, integration checks, and risk monitoring. |
-
-All three members implement features, update assigned tasks, document decisions, and review pull requests written by another member. Role ownership establishes accountability without making any component dependent on one person.
-
+Ideally, every teammate works on every feature but they own quality in different layers. All three members will review each other's pull requests, write code, update assigned tasks, and keep team members aware of decisions. Ownership ensures accountability without risking the project if someone is unavailable.
 
 ## 4. Scope and success criteria
 
 | Feature | Minimum deliverable and acceptance criteria |
-
 | --- | --- |
+| Profiles and groups | User can sign into an account and join a collaborative practice group. The user's authorized group is returned from the server upon visiting the dashboard/profile page. |
+| Weekly leaderboard | Rankings of group members by verified problems solved that week. Design a consistent UTC boundary for the week. Repeated submissions for the same problem do not increase the count; identical scores can have the same rank. |
+| Unlockable discussions | Posts can be read and written if signed in and discussion is unlocked by verified account problem completion. Members cannot read or write locked discussions until completion has been verified. Includes server-side API request checks. Failure cases are covered by automated tests. |
+| Activity dashboard | View number of problems solved total and per-week history with timestamps from connected accounts. GitHub events and local IDE activity each have separate metrics from problem-solving scores to prevent misleading or gamed rankings. Missing, loading, empty, and failed-sync states. |
+| External integrations | Begin with research into automated verification with LeetCode. Add a connector for GitHub activity after core UX is functional; consider WakaTime integration a bonus. Clearly label verification mocks so simulated functionality is never confused with the real product during a demo. |
 
-| Profiles and groups | A user can sign in and join a practice group. Group activity and discussion access are checked on the server. |
+Both positive and negative test cases are covered by automated tests. Connection failures are handled clearly and designed for retry. A clear marker indicates which sources are demo fixtures; never tell a user their demo credentials successfully connected to real services.
 
-| Weekly leaderboard | Rank members by distinct verified problems completed in a defined week. Use a documented UTC week boundary; repeat submissions do not increase the count, and equal scores share a rank. |
+**Out of scope:** Running untrusted code submitted by users. Presenting LeetCode problem descriptions. Building an online judge platform. Native iOS or Android app development. Competing with similar global platforms publicly. Initial release will focus on private groups of practicing students and professionals.
 
-| Unlockable discussions | A user without verified completion cannot read or post to that problem discussion. Access checks apply to API requests as well as the interface. An automated test covers both permitted and denied access. |
-
-| Activity dashboard | Display completed-problem counts, weekly history, and source timestamps. Keep GitHub events and IDE time separate from solved-problem scores. Show empty, loading, and failed-sync states. |
-
-| External integrations | Investigate LeetCode verification first. Add a GitHub activity connector after core workflows work; treat WakaTime integration as a stretch feature. Clearly label demo fixtures and never represent them as live verification. |
-
-Out of scope: executing untrusted submitted code, recreating LeetCode problem content, building a complete online judge, native mobile applications, and public global competitions. The first release targets small practice groups.
-
-Definition of done: acceptance criteria are met, relevant tests pass, another member reviews the change, documentation is updated, and the approved pull request is merged. A final demonstration must exercise sign-in, leaderboard calculation, discussion access control, and dashboard error handling.
-
+**Definition of done:** All acceptance criteria are met and confirmed by a teammate. All tests pass. Pull request is reviewed by another teammate and documentation is updated. Approved pull request is merged. Demonstration covers account sign-in, leaderboard score calculation, attempts to view locked/unlocked discussions, and error states on dashboard.
 
 ## 5. Proposed programming languages and technologies
 
 | Layer | Selection and rationale |
-
 | --- | --- |
-
-| Frontend | TypeScript, React, HTML and CSS, with Vite for development/build tooling. Reusable components support the dashboard, rankings, and discussion screens. |
-
-| Backend | Node.js with TypeScript and Express. A REST API centralizes account, group, scoring, and discussion authorization logic while sharing a language with the frontend. |
-
-| Data | PostgreSQL and SQL migrations for users, groups, problems, verified completions, weekly scores, and discussion posts. Constraints prevent duplicate completion records. |
-
-| Testing and delivery | Vitest for application tests; Playwright for critical browser flows. GitHub Actions will run build and tests after the application scaffold exists. Git and GitHub manage changes; GitHub Projects tracks tasks. |
-
-| Integration approach | Source-specific adapters normalize external data. Tokens stay on the server; local configuration uses ignored environment files and a committed example containing placeholders only. |
-
-These are proposed choices, not claims that the application or its dependencies are already installed. Exact runtime and dependency versions will be selected and locked during scaffolding. The deployment host will be chosen within the course budget and requirements.
-
+| Frontend | TypeScript, React, HTML/CSS, JavaScript when needed. Choose tooling that allows re-use between dashboard, rankings, and discussion boards. |
+| Backend | Node.js with TypeScript. The same language will be used for the frontend and backend, which communicate through an API. Architect to be understandable by the entire team. |
+| Data | PostgreSQL. Storage is required for users, groups, practice problems, verified LeetCode submissions, weekly scores, and restricted discussion posts. Constraints prevent duplicate completion records; verification checks whether a problem was actually completed. |
+| Testing and delivery | Vitest and Playwright when project scaffold exists. Delivery will use GitHub Actions to trigger build and selected tests when code is committed. Git and GitHub for version control and pull request review. Public repository and GitHub Projects for task tracking. |
+| Integration approach | Connectors will be built as independent abstractions over a source. Tokens should never be committed to Git. Use ignored environment files or approved secret storage, and a committed example file with placeholders. |
 
 ## 6. Development and configuration management
 
-Repository: https://github.com/Santi852/Cen3031-Proj-1
+**Repository:** https://github.com/Santi852/Cen3031-Proj-1
 
-Git is the source of truth for code, documentation, migrations, dependency manifests, and lockfiles. Main is the integration branch and serves the role called "Master Branch" in the assignment. Team members work on short-lived feature, fix, or documentation branches and merge through reviewed pull requests.
+Main is used as the Git integration branch and substitutes for Master Branch from the assignment sheet. Teammates should create short-lived feature/fix/docs branches when contributing changes and open pull requests to merge into main. During merge review at least one other teammate must approve the change.
 
 | Control | Team practice |
-
 | --- | --- |
-
-| Change workflow | Create or select an issue, branch from current main, make a focused change, verify it locally, and open a pull request linked to the issue. Obtain at least one approval from another teammate. |
-
-| Branch protection | The live repository reports main as protected. The supplied settings screenshot shows required pull requests, one approval, and dismissal of stale approvals. The repository owner must verify the detailed saved settings; they were not readable through the current contributor account. |
-
-| Environment consistency | Document setup commands once the scaffold exists. Commit lockfiles and migrations. Keep real secrets out of Git; provide a safe environment-variable example. Review dependency and schema changes through pull requests. |
-
-| Review and recovery | Resolve review comments before merging. Re-review changed code when approval becomes stale. Revert a problematic merged change through a new pull request; use version tags for agreed course milestones. |
-
-| Quality checks | Use manual checks for planning documents. Add automated build, type checking, and relevant tests when runnable code exists, then ask the owner to make passing checks required. |
-
-| Task management | Use Backlog, Ready, In progress, In review, and Done on the existing GitHub project. Every task has an owner and acceptance criteria. Move a task to Done only after its deliverable is verified. |
-
+| Change workflow | Create a short-lived branch, make a focused change, and open a pull request. Obtain approval from another teammate before merging into main. |
+| Branch protection | Main is confirmed protected. The supplied screenshot shows required pull requests, one approval, and dismissal of stale approvals. The repository owner needs to verify the detailed saved settings since the contributor account does not have permission to view them. |
+| Environment consistency | Documentation of setup commands added when project scaffold is created. Migrations and lockfiles committed to ensure consistency. Secrets remain out of Git; include a safe environment-variable example. Review dependency changes and schema migrations via pull requests. |
+| Review and recovery | Review comments before merging. Newly appended code to an approved pull request should be reviewed again. Use revert on a bad merge when possible. Use tags to mark agreed course milestones. |
+| Quality checks | Manual checks will be used for planning documents. Use automated checks when application code exists. Ask repository owner to enforce passing checks before merging. |
+| Task management | Columns are Backlog > Ready > In Progress > In Review > Done on GitHub project. Ownership is defined on each task and acceptance criteria are defined on each issue. A task cannot be moved to Done unless its work is confirmed to be complete. |
 
 ## 7. Delivery plan
 
 | Stage | Deliverable | Lead |
-
 | --- | --- | --- |
+| 1 - Definition | Confirm requirements, vision, high-level roles and stack selections, integration feasibility, and backlog. Project proposal. | Matias; team review |
+| 2 - Foundation | Application scaffold created, database schema designed, sign-in implemented with group model, and test suite workflow. | Santiago: frontend; Matias: backend |
+| 3 - Core workflows | Leaderboard, problem completion integration, restricted discussions, and functional dashboard. | All |
+| 4 - Integration and release | Connector interfaces, error handling, end-to-end testing, delivery demo, and project documentation. | Hussain; team review |
 
-| 1 - Definition | Confirm challenge, scope, roles, stack, integration feasibility, and proposal. | Matias; all review |
-
-| 2 - Foundation | Frontend and backend scaffold, database schema, sign-in, group model, and test workflow. | Santiago / Matias |
-
-| 3 - Core workflows | Leaderboard, completion verification, discussion gates, and basic dashboard. | All members |
-
-| 4 - Integration and release | Source connectors, failure handling, end-to-end tests, documentation, and demonstration. | Hussain; all support |
-
-These stages describe sequence, not invented course deadlines. The team will assign dates from the course calendar, review progress twice per week, and raise blockers within 24 hours. Matias will coordinate reprioritization when scope or availability changes.
-
+These stages describe task ordering, not course milestones. Deadlines will be assigned using the course calendar. Teammates will review progress daily and bring blockers to the team within 24 hours. Matias is responsible for coordinating priority changes.
 
 ## 8. Risk management process
 
-Identify: Review requirements, dependencies, workload, data handling, and integration assumptions at kickoff and whenever scope changes. Record each risk with an owner and an observable warning sign.
+**Identify:** Review risk factors during project kickoff. Re-evaluate after any changes to scope. Risks should be recorded with an owner and an actionable warning sign.
 
-Assess and prioritize: Score likelihood and impact from 1 (low) to 3 (high). Multiply them to obtain a priority score: 1-2 low, 3-4 medium, and 6-9 high. Scores are initial team estimates, not measured probabilities.
+**Assess and prioritize:** Estimate likelihood and impact from 1 (Low) to 3 (High). Multiply values to determine relative priority. 1-2: Low Priority. 3-4: Medium Priority. 6-9: High Priority. Scores are subjective and should only be used for ordering; they do not represent probabilities.
 
-Respond: Reduce high risks early, avoid work that cannot meet course constraints, and define fallback behavior before depending on external services. Allocate integration research before committing to the complete feature set.
+**Respond:** Focus efforts on high-priority risks. Avoid risk by not doing work that will not be done right within course limitations. Prepare for risks by defining behavior when the risk occurs before enabling the associated functionality. Common risks can be mitigated by allocating time to investigate during kickoff.
 
-Monitor: Review the register at each twice-weekly check-in. Owners report evidence, current score, mitigation progress, and whether a trigger has occurred. If triggered, open or update an issue, execute the contingency, and revise scope with the team. Matias coordinates escalation to the instructor when the challenge itself is affected.
+**Monitor:** Monitor risks during the regularly scheduled check-ins. Owners should provide current score, mitigation progress, and whether the warning sign has been triggered. If triggered, create or update an issue, complete the contingency plan, and reassess scope with the team. Risks affecting course deliverables are escalated to the instructor via Matias.
 
+### Risk register: feasibility and project delivery
 
-## Risk register: feasibility and delivery
+#### R1: LeetCode data is unavailable or changing
 
+**Impact:** 3 / High. **Likelihood:** 3 / High. **Priority:** 9 / High. **Owner:** Hussain. **Initial status:** Open.
 
-### R1 - Unavailable or changing LeetCode data
+**Trigger:** Early research cannot uncover a reliable method to confirm problem solves, source data changes, the server is down, or access is revoked.
 
-Priority: 3 x 3 = 9 / High. Owner: Hussain. Initial status: Open.
+**Mitigation:** Assess risks before starting features. Connectors should isolate the dependency. Normalize incoming records. Record timestamps and be aware of rate limits.
 
-Trigger: Early feasibility research cannot reliably verify completed problems, or source access fails.
-Mitigation: Investigate permitted data access before feature development; isolate the adapter; deduplicate records; retain timestamps and handle rate limits.
-Contingency: Use clearly labeled fixtures for the prototype and seek instructor agreement on reduced scope or an approved verification method. Do not unlock real-user discussions from self-reported data.
+**Contingency:** Use demonstration fixtures that are clearly labeled; seek instructor approval if a scope change reduces features or requires an alternative verification process. Discussion posts will not be unlocked based on self-reported problem solves.
 
+#### R2: Project scope will exceed available time
 
-### R2 - Scope exceeds available time
+**Impact:** 3 / High. **Likelihood:** 3 / High. **Priority:** 9 / High. **Owner:** Matias. **Initial status:** Open.
 
-Priority: 3 x 3 = 9 / High. Owner: Matias. Initial status: Open.
+**Trigger:** Functionality is overdue at a planned checkpoint or its relative effort exceeds the remaining capacity. Adjusted scope is approved and the feature still doesn't meet the checkpoint. Demonstration or shipping falls off the projected timeline.
 
-Trigger: A core feature slips a planned checkpoint or the estimate exceeds remaining capacity.
-Mitigation: Prioritize the core flows and define acceptance criteria. Keep WakaTime and advanced analytics outside the minimum release.
-Contingency: Drop stretch integrations, simplify the UI, and deliver a tested core workflow with the reduced scope documented.
+**Mitigation:** Verify understanding of the core flows and confirm acceptance criteria. Core features have been identified. Stretch goals are outside of the minimum product.
 
+**Contingency:** Strip out recognized stretch goals, simplify workflow, remove unused UI. Ship something that works. Seriously.
 
-### R3 - Teammate unavailability or skill gaps
+#### R3: Unavailability of a teammate or skills become blockers
 
-Priority: 2 x 3 = 6 / High. Owner: Matias. Initial status: Open.
+**Impact:** 3 / High. **Likelihood:** 2 / Medium. **Priority:** 6 / High. **Owner:** Matias. **Initial status:** Open.
 
-Trigger: A blocker remains unresolved for more than 24 hours or an owner misses a checkpoint.
-Mitigation: Share setup notes, pair on unfamiliar work, and keep each change small enough for another teammate to review.
-Contingency: Reassign the blocked task, pair with the available teammate, and reduce scope if capacity is lower than planned.
+**Trigger:** A blocker has been unresolved for one day or an owner misses a project checkpoint. No response from a teammate for 24 hours. Blocked by a risk being investigated.
 
+**Mitigation:** Documentation makes setup repeatable by anyone. Pair on risky features. Keep changes small enough for a teammate to review.
 
-### R4 - Merge conflicts and inconsistent environments
+**Contingency:** Assign another owner. Pair with a teammate to resolve or reprioritize if capacity has dropped.
 
-Priority: 2 x 2 = 4 / Medium. Owner: Santiago. Initial status: Open.
+#### R4: Merge conflicts and inconsistent environments between teammates
 
-Trigger: Branches diverge or another teammate cannot reproduce setup/build behavior.
-Mitigation: Use short-lived branches, reviewed changes, documented setup, lockfiles, and agreed runtime versions.
-Contingency: Resolve conflicts with the affected owners and revert a breaking merge if necessary; repair setup notes before continuing.
+**Impact:** 2 / Medium. **Likelihood:** 2 / Medium. **Priority:** 4 / Medium. **Owner:** Santiago. **Initial status:** Open.
 
+**Trigger:** Branches have significantly diverged or a teammate cannot reproduce the same build/setup behavior. A communication gap is present between teammates. A merge request takes longer than expected to resolve.
 
-## Risk register: data and product quality
+**Mitigation:** Use short-lived branches. Require PR review for changes. Document setup process, lockfiles, and agree on runtime versions.
 
+**Contingency:** Coordinate with the owner to resolve conflicts. Consider rollback if a merge broke the project build for another teammate. Fix setup instructions to prevent future regressions.
 
-### R5 - Unauthorized access or exposed credentials
+### Risk register: sensitive data and presentation quality
 
-Priority: 2 x 3 = 6 / High. Owner: Matias. Initial status: Open.
+#### R5: Account or authorization data is exposed
 
-Trigger: An access-control test fails or a real token appears in a commit or log.
-Mitigation: Check discussion and group permissions on the server, use least-privilege tokens, ignore local secrets, and review logs and example configuration.
-Contingency: Disable affected access, revoke the exposed credential, repair the authorization rule, and rerun the affected tests before restoring the feature.
+**Impact:** 3 / High. **Likelihood:** 2 / Medium. **Priority:** 6 / High. **Owner:** Matias. **Initial status:** Open.
 
+**Trigger:** An access-control test fails or an exposed credential appears in code/logs. Real tokens are found in committed example files or code.
 
-### R6 - Incorrect rankings or duplicate activity
+**Mitigation:** Check authorization on the server for group/discussion data. Do not expose local secrets. Audit config examples. Review application logs.
 
-Priority: 2 x 2 = 4 / Medium. Owner: Hussain. Initial status: Open.
+**Contingency:** Disable affected functionality. Revoke exposed credentials. Repair authorization rules and test before restoring affected functionality.
 
-Trigger: Repeated submissions increase the score or week-boundary tests produce inconsistent results.
-Mitigation: Specify UTC week boundaries, count distinct verified problems, use unique constraints, and test retries and ties.
-Contingency: Pause affected rankings, recompute from source completion records, and display a correction notice for affected users.
+#### R6: Users are ranked incorrectly or their activity is duplicated
 
+**Impact:** 2 / Medium. **Likelihood:** 2 / Medium. **Priority:** 4 / Medium. **Owner:** Hussain. **Initial status:** Open.
 
-### R7 - External outages or rate limits
+**Trigger:** Acceptance test for ties failed or verification tests don't meet the defined criteria. Scoring algorithm is inconsistent. Week-boundary tests fail. Retries are counted multiple times.
 
-Priority: 2 x 2 = 4 / Medium. Owner: Hussain. Initial status: Open.
+**Mitigation:** Clearly define start and end of a week. Use constraints to prevent duplicate scores. Document and test assumptions about ties, retries, etc.
 
-Trigger: A connector returns repeated failures or a rate-limit response.
-Mitigation: Cache recent results, show last-sync time, use bounded retries, and keep core pages usable without an immediate refresh.
-Contingency: Display the last successful data as stale and disable refresh temporarily; recover through a controlled resync.
+**Contingency:** Temporarily hide ranks while logs are investigated. Adjust ranks based on verified completion records. Display a correction message/log entry to users. Clarify the source of risk and resolution steps.
 
+#### R7: A third-party service becomes unreachable or enforces rate limits
 
-### R8 - Late discovery of unusable or broken flows
+**Impact:** 2 / Medium. **Likelihood:** 2 / Medium. **Priority:** 4 / Medium. **Owner:** Hussain. **Initial status:** Open.
 
-Priority: 2 x 2 = 4 / Medium. Owner: Santiago. Initial status: Open.
+**Trigger:** Connector returned HTTP failure codes or a known rate-limit message repeatedly. Downstream service impacts release functionality due to intermittent or nonexistent connectivity. Rate limits do not permit the planned refresh frequency.
 
-Trigger: A teammate cannot finish the demonstration flow or encounters inaccessible controls.
-Mitigation: Review wireframes early; check keyboard access and empty/error states; test the full user journey before release.
-Contingency: Prioritize blocking defects, simplify the affected screen, and defer cosmetic improvements.
+**Mitigation:** Cache retrieved data where possible. Show last-sync time. Implement automatic retries with limits. Build workflows that don't rely on real-time success.
 
+**Contingency:** Notify users the data is stale. Pause retries until the service recovers or the rate-limit window expires, then resume manually or via a scheduled sync task. Rework proposed solutions to reduce risk likelihood.
 
-## 9. Submission and final review
+#### R8: Defects discovered late in the cycle impact critical flows
 
-Submit this proposal as a PDF together with screenshots of the repository, configuration-management documentation, saved branch-protection settings, and a populated project board. Before submission, agree on the proposed team name, remaining roles, and stack; verify challenge alignment and the textbook vision template; and use the course calendar for final task dates.
+**Impact:** 2 / Medium. **Likelihood:** 2 / Medium. **Priority:** 4 / Medium. **Owner:** Santiago. **Initial status:** Open.
 
-Reference basis: Assignment instructions and four supplied setup screenshots; repository README inspected September 15, 2026. Technical references: <link href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches"><u>GitHub protected branches</u></link> and <link href="https://react.dev/learn"><u>React documentation</u></link>. The external integrations remain feasibility assumptions, not verified implementation capabilities.
+**Trigger:** A partner cannot complete the demonstration or is blocked by a UI lacking instructions or a control. Critical tests are missing from approved software. A defect is found during user-experience review or after a soft deadline. Milestones are missed consistently.
+
+**Mitigation:** Review proposed wireframes as a team. Validate the entire flow including empty states, keyboard accessibility, etc.
+
+**Contingency:** Fix release-blocking defects before shipping; defer minor cosmetic issues. Remove unnecessary complexity from the sprint. Simplify the UI.
+
+## 9. Submission tasks
+
+Submit this file as a PDF with screenshots of your project repository, configuration-management process documentation, branch-protection screen, and populated project board linked in your README. Confirm remaining roles and stack before submitting. Confirm the challenge and vision template from your textbook before submission. Review the class calendar and assign task estimates before final submission.

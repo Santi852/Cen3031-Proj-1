@@ -38,7 +38,7 @@ Use the existing **LeetCode Productivity App - Task Board** with these stages:
 | In review | A deliverable or pull request is awaiting review |
 | Done | Acceptance criteria are verified and the approved change is merged, when applicable |
 
-Link repository issues to the board. Assign one accountable owner per issue; other members can help. Review progress and risks twice weekly and report blockers within 24 hours. Set dates from the course schedule rather than estimating an unknown submission deadline.
+Link repository issues to the board. Assign one accountable owner per issue; other members can help. Review progress and risks daily and report blockers within 24 hours. Set dates from the course schedule rather than estimating an unknown submission deadline.
 
 ## Recovery and milestones
 
