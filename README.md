@@ -10,7 +10,7 @@ A gamified, social platform that makes technical interview prep more engaging. R
 
 ## Project Management
 
-Task tracking and progress live on this repository's Projects board (see the Projects tab).
+Task tracking and progress live on the [StackSprint project board](https://github.com/users/matiascamaran/projects/1), using issues from this repository.
 
 ## Contributing
 
@@ -21,3 +21,19 @@ Task tracking and progress live on this repository's Projects board (see the Pro
 ## Status
 
 Early setup phase — tech stack and architecture details are being finalized in the project proposal.
+
+## Development Environment and Project Proposal Plan
+
+- [Project proposal](docs/PROJECT_PROPOSAL.md) and [PDF](docs/StackSprint_Project_Proposal.pdf)
+- [Configuration management and contribution workflow](CONTRIBUTING.md)
+- [Initial task backlog](https://github.com/Santi852/Cen3031-Proj-1/issues)
+
+**Team name:** StackSprint.
+
+| Member | Role |
+| --- | --- |
+| Santiago Ramirez | Frontend lead |
+| Matias Camaran | Proposed project coordinator and backend lead |
+| Hussain | Proposed integrations and quality lead |
+
+The proposal recommends TypeScript, React, Node.js, and PostgreSQL. Stack and remaining role decisions await team agreement; the application has not yet been scaffolded. Review the proposal against the instructor's challenge statement and the assigned textbook before submission.
