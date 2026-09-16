@@ -28,7 +28,7 @@ GitHub stores the team's source code, project documents, dependency manifests an
 
 ## Project management
 
-Use the existing **LeetCode Productivity App - Task Board** with these stages:
+Use the [StackSprint - LeetCode Productivity App board](https://github.com/users/matiascamaran/projects/1) with these stages:
 
 | Status | Meaning |
 | --- | --- |

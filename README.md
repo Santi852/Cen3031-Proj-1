@@ -10,7 +10,7 @@ A gamified, social platform that makes technical interview prep more engaging. R
 
 ## Project Management
 
-Task tracking and progress live on this repository's Projects board (see the Projects tab).
+Task tracking and progress live on the [StackSprint project board](https://github.com/users/matiascamaran/projects/1), using issues from this repository.
 
 ## Contributing
 
