@@ -1,7 +1,5 @@
-import express from "express";
-import cors from "cors";
+import "dotenv/config";
+import app from "./app.js";
 
-const app = express();
-app.use(cors());
-app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
-app.listen(3001, () => console.log("API on http://localhost:3001"));
+const port = Number(process.env.PORT) || 3001;
+app.listen(port, () => console.log(`API on http://localhost:${port}`));
