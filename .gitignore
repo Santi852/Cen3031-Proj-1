@@ -43,3 +43,6 @@ logs/
 # --- Misc ---
 *.tmp
 *.bak
+
+test-results/
+playwright-report/
