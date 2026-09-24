@@ -22,6 +22,39 @@ Task tracking and progress live on the [StackSprint project board](https://githu
 
 Early setup phase — tech stack and architecture details are being finalized in the project proposal.
 
+## Local Setup
+
+Requires Node.js 22 and npm.
+
+```bash
+git clone https://github.com/Santi852/Cen3031-Proj-1.git
+cd Cen3031-Proj-1
+
+cd backend
+cp .env.example .env
+npm install
+npm run dev
+
+cd frontend
+npm install
+npm run dev
+```
+
+Fill in real values in `backend/.env` (never commit it). The backend runs on http://localhost:3001. Start the frontend in a second terminal, then open http://localhost:5173. The page should show `API: ok` when the backend is running.
+
+### Tests
+
+| Command | Where | What it runs |
+| --- | --- | --- |
+| `npm test` | `backend/` | Vitest API tests |
+| `npm run typecheck` | `backend/` | TypeScript type check |
+| `npm run lint` / `npm run build` | `frontend/` | ESLint and production build |
+| `npm run test:e2e` | `frontend/` | Playwright smoke test (starts both servers automatically) |
+
+Before the first Playwright run, install the browser once with `npx playwright install chromium` in `frontend/`.
+
+GitHub Actions (`.github/workflows/ci.yml`) runs all of these on every pull request.
+
 ## Development Environment and Project Proposal Plan
 
 - [Project proposal](docs/PROJECT_PROPOSAL.md) and [PDF](docs/StackSprint_Project_Proposal.pdf)
