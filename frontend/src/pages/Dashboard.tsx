@@ -1,21 +1,14 @@
-import { useEffect, useState } from "react";
+import { useAuth } from "../auth/AuthContext";
 
-// Moved here from App.tsx. Hussain's Playwright smoke test asserts on the
-// text "API: ok" at "/", so this check has to stay reachable on this page.
+// The API health check that used to live here moved to the Layout footer
+// (see the comment there).
 export default function Dashboard() {
-  const [apiStatus, setApiStatus] = useState("checking...");
-
-  useEffect(() => {
-    fetch("http://localhost:3001/api/health")
-      .then((res) => res.json())
-      .then((data) => setApiStatus(data.status))
-      .catch(() => setApiStatus("unreachable"));
-  }, []);
+  const { user } = useAuth();
 
   return (
     <section>
       <h2>Dashboard</h2>
-      <p>API: {apiStatus}</p>
+      <p>Signed in as {user?.email}.</p>
     </section>
   );
 }

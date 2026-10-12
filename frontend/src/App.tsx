@@ -7,17 +7,20 @@ import LinkAccount from "./pages/LinkAccount";
 import Leaderboard from "./pages/Leaderboard";
 import Problem from "./pages/Problem";
 import NotFound from "./pages/NotFound";
+import RequireAuth from "./auth/RequireAuth";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Dashboard />} />
+        <Route element={<RequireAuth />}>
+          <Route index element={<Dashboard />} />
+          <Route path="link-account" element={<LinkAccount />} />
+          <Route path="problem/:slug" element={<Problem />} />
+        </Route>
         <Route path="leaderboard" element={<Leaderboard />} />
-        <Route path="link-account" element={<LinkAccount />} />
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
-        <Route path="problem/:slug" element={<Problem />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
