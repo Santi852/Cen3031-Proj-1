@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
+import EmptyState from "../components/EmptyState";
 
 export default function NotFound() {
   return (
     <section>
       <h2>Page not found</h2>
-      <p>
-        That page doesn&rsquo;t exist. <Link to="/">Back to dashboard</Link>
-      </p>
+      <EmptyState
+        title="That page doesn’t exist."
+        action={
+          <Link className="button button-secondary" to="/">
+            Back to dashboard
+          </Link>
+        }
+      />
     </section>
   );
 }

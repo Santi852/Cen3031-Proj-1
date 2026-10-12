@@ -47,7 +47,7 @@ export default function Layout(){
             </main>
             <footer>
                 <p> CEN3031 &middot; Santiago, Matias, Hussain</p>
-                <p className="api-status">API: {apiStatus}</p>
+                <p>API: {apiStatus}</p>
             </footer>
         </div>
     );

@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate, type Location } from "react-r
 import { useAuth } from "../auth/AuthContext";
 import { AuthError } from "../auth/authService";
 import { MIN_PASSWORD_LENGTH, validateSignUp, type FieldErrors } from "../auth/validation";
+import ErrorMessage from "../components/ErrorMessage";
 import FormField from "../components/FormField";
 
 export default function SignUp() {
@@ -38,14 +39,10 @@ export default function SignUp() {
   }
 
   return (
-    <section className="auth-page">
+    <section>
       <h2>Create your account</h2>
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        {formError && (
-          <p className="form-error" role="alert">
-            {formError}
-          </p>
-        )}
+        {formError && <ErrorMessage message={formError} />}
         <FormField
           id="email"
           label="Email"
@@ -74,7 +71,7 @@ export default function SignUp() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           error={errors.confirmPassword}
         />
-        <button type="submit" disabled={submitting}>
+        <button type="submit" className="button button-primary" disabled={submitting}>
           {submitting ? "Creating account…" : "Sign up"}
         </button>
       </form>

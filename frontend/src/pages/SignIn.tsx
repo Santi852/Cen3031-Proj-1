@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate, type Location } from "react-r
 import { useAuth } from "../auth/AuthContext";
 import { AuthError } from "../auth/authService";
 import { validateSignIn, type FieldErrors } from "../auth/validation";
+import ErrorMessage from "../components/ErrorMessage";
 import FormField from "../components/FormField";
 
 export default function SignIn() {
@@ -38,14 +39,10 @@ export default function SignIn() {
   }
 
   return (
-    <section className="auth-page">
+    <section>
       <h2>Sign in</h2>
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        {formError && (
-          <p className="form-error" role="alert">
-            {formError}
-          </p>
-        )}
+        {formError && <ErrorMessage message={formError} />}
         <FormField
           id="email"
           label="Email"
@@ -64,7 +61,7 @@ export default function SignIn() {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
-        <button type="submit" disabled={submitting}>
+        <button type="submit" className="button button-primary" disabled={submitting}>
           {submitting ? "Signing in…" : "Sign in"}
         </button>
       </form>
