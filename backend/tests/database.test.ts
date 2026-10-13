@@ -34,6 +34,7 @@ function migrate(direction: "up" | "down") {
     migrationsSchema: schema,
     migrationsTable: "pgmigrations",
     singleTransaction: true,
+    advisoryLockMode: "wait",
     log: () => undefined,
   });
 }
