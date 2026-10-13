@@ -6,7 +6,7 @@ GitHub stores the team's source code, project documents, dependency manifests an
 
 ## Making a change
 
-1. Select or create a GitHub issue with an owner and acceptance criteria.
+1. Select or create a GitHub issue with an owner and acceptance criteria. Use the [Task issue template](.github/ISSUE_TEMPLATE/task.md) for new tasks and select one accountable assignee in GitHub.
 2. Update your local `main`, then create a short-lived branch such as `feature/weekly-leaderboard`, `fix/score-duplicates`, or `docs/project-proposal`.
 3. Make focused commits. Do not commit credentials, generated build output, or installed dependencies.
 4. Run `npm run check` from the repository root. Run `npm run test:e2e` for changes affecting app startup or browser behavior; see the README for the one-time browser installation. Review documentation content and links when they change.
