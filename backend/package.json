@@ -12,16 +12,19 @@
     "lint": "eslint .",
     "db:migrate": "node-pg-migrate up",
     "db:rollback": "node-pg-migrate down",
-    "test:db": "vitest run tests/database.test.ts"
+    "test:db": "vitest run tests"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "argon2": "0.45.1",
     "cors": "^2.8.6",
     "dotenv": "^18.0.3",
     "express": "^5.2.1",
+    "express-rate-limit": "8.7.1",
+    "jose": "6.2.12",
     "node-pg-migrate": "9.0.0",
     "pg": "8.23.1"
   },

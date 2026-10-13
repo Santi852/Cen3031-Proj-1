@@ -9,6 +9,10 @@ jobs:
   scaffold:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DATABASE_URL: postgres://postgres:password@localhost:5432/stacksprint_test
+      TEST_DATABASE_URL: postgres://postgres:password@localhost:5432/stacksprint_test
+      JWT_SECRET: ci-only-token-signing-key-not-for-deployment
     services:
       postgres:
         image: postgres:17
@@ -36,9 +40,8 @@ jobs:
       - run: npm ci
       - run: npm run setup
       - run: npm run check
+      - run: npm run db:migrate
       - run: npm run test:db
-        env:
-          TEST_DATABASE_URL: postgres://postgres:password@localhost:5432/stacksprint_test
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
       - run: npm run test:e2e
