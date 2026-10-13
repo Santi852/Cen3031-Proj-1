@@ -20,7 +20,7 @@ Task tracking and progress live on the [StackSprint project board](https://githu
 
 ## Status
 
-The TypeScript scaffold includes a React/Vite frontend, an Express API health endpoint, shared lint/format settings, and automated checks. Database integration and backend authentication are still pending. The frontend sign-in/sign-up flow currently uses a development-only browser storage stub.
+The TypeScript scaffold includes a React/Vite frontend, an Express API health endpoint, shared lint/format settings, and automated checks. PostgreSQL schema and migration tooling are available; backend authentication is still pending. The frontend sign-in/sign-up flow currently uses a development-only browser storage stub.
 
 ## Local Setup
 
@@ -37,7 +37,7 @@ npm run setup
 cp backend/.env.example backend/.env
 ```
 
-`npm ci` installs the shared tooling; `npm run setup` installs the backend and frontend using their separate lockfiles. Keep `backend/.env` local and never commit credentials. `PORT` defaults to `3001`; `DATABASE_URL` and `JWT_SECRET` are placeholders for future database/auth work. The current health endpoint does not need database credentials or a JWT secret.
+`npm ci` installs the shared tooling; `npm run setup` installs the backend and frontend using their separate lockfiles. Keep `backend/.env` local and never commit credentials. `PORT` defaults to `3001`; `DATABASE_URL` configures database migrations; `JWT_SECRET` is a placeholder for future authentication work. The current health endpoint does not need database credentials or a JWT secret.
 
 Start each app in its own terminal, both from the repository root:
 
@@ -50,6 +50,8 @@ npm run dev:frontend
 ```
 
 The API runs at http://localhost:3001 and the frontend at http://localhost:5173. Keep the API on port `3001` for the current frontend health check and browser test. A signed-out visit redirects to sign-in; the footer should show `API: ok`.
+
+For database setup, migrations, and database tests, follow the [database guide](backend/README.md). The current health endpoint and frontend can run without PostgreSQL.
 
 ### Checks and builds
 
