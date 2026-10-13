@@ -2,7 +2,7 @@
 
 A gamified, social platform that makes technical interview prep more engaging. Race friends on weekly leaderboards, unlock code discussions once you've solved a problem yourself, and track real coding activity across your IDE, GitHub, and LeetCode.
 
-## Core Features
+## Planned Features
 
 - **Weekly Leaderboards** — Compete with friends to solve the most LeetCode problems each week.
 - **Unlockable Code Discussions** — See and discuss other users' solutions to a problem, unlocked only after you've solved it yourself.
@@ -20,40 +20,54 @@ Task tracking and progress live on the [StackSprint project board](https://githu
 
 ## Status
 
-Early setup phase — tech stack and architecture details are being finalized in the project proposal.
+The TypeScript scaffold includes a React/Vite frontend, an Express API health endpoint, shared lint/format settings, and automated checks. Database integration and backend authentication are still pending. The frontend sign-in/sign-up flow currently uses a development-only browser storage stub.
 
 ## Local Setup
 
-Requires Node.js 22 and npm.
+Use the Node.js version pinned in `.nvmrc` and its bundled npm. The tooling requires Node.js 22.13 or newer in the Node 22 release line. With nvm installed, run these commands from the repository root:
 
 ```bash
 git clone https://github.com/Santi852/Cen3031-Proj-1.git
 cd Cen3031-Proj-1
 
-cd backend
-cp .env.example .env
-npm install
-npm run dev
-
-cd frontend
-npm install
-npm run dev
+nvm install
+nvm use
+npm ci
+npm run setup
+cp backend/.env.example backend/.env
 ```
 
-Fill in real values in `backend/.env` (never commit it). The backend runs on http://localhost:3001. Start the frontend in a second terminal, then open http://localhost:5173. The page should show `API: ok` when the backend is running.
+`npm ci` installs the shared tooling; `npm run setup` installs the backend and frontend using their separate lockfiles. Keep `backend/.env` local and never commit credentials. `PORT` defaults to `3001`; `DATABASE_URL` and `JWT_SECRET` are placeholders for future database/auth work. The current health endpoint does not need database credentials or a JWT secret.
 
-### Tests
+Start each app in its own terminal, both from the repository root:
 
-| Command | Where | What it runs |
-| --- | --- | --- |
-| `npm test` | `backend/` | Vitest API tests |
-| `npm run typecheck` | `backend/` | TypeScript type check |
-| `npm run lint` / `npm run build` | `frontend/` | ESLint and production build |
-| `npm run test:e2e` | `frontend/` | Playwright smoke test (starts both servers automatically) |
+```bash
+npm run dev:backend
+```
 
-Before the first Playwright run, install the browser once with `npx playwright install chromium` in `frontend/`.
+```bash
+npm run dev:frontend
+```
 
-GitHub Actions (`.github/workflows/ci.yml`) runs all of these on every pull request.
+The API runs at http://localhost:3001 and the frontend at http://localhost:5173. Keep the API on port `3001` for the current frontend health check and browser test. A signed-out visit redirects to sign-in; the footer should show `API: ok`.
+
+### Checks and builds
+
+Run these commands from the repository root:
+
+| Command                | What it runs                                                                |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `npm run check`        | Lint, formatting check, type checks, both builds, and backend tests         |
+| `npm run lint`         | Shared ESLint rules across the backend and frontend                         |
+| `npm run format:check` | Shared Prettier formatting check                                            |
+| `npm run typecheck`    | Backend and frontend TypeScript checks                                      |
+| `npm run build`        | Backend JavaScript in `backend/dist` and frontend assets in `frontend/dist` |
+| `npm test`             | Vitest API tests                                                            |
+| `npm run test:e2e`     | Playwright smoke test; starts both development servers automatically        |
+
+Before the first browser test, run `npx playwright install chromium` from `frontend/`. Then return to the repository root and run `npm run test:e2e`. Browser tests are separate from `npm run check`.
+
+After `npm run build`, run the compiled API with `npm start --prefix backend`. GitHub Actions (`.github/workflows/ci.yml`) validates the scaffold on pull requests and pushes to `main`.
 
 ## Development Environment and Project Proposal Plan
 
@@ -63,10 +77,10 @@ GitHub Actions (`.github/workflows/ci.yml`) runs all of these on every pull requ
 
 **Team name:** StackSprint.
 
-| Member | Role |
-| --- | --- |
-| Santiago Ramirez | Frontend lead |
-| Matias Camaran | Proposed project coordinator and backend lead |
-| Hussain | Proposed integrations and quality lead |
+| Member           | Role                                          |
+| ---------------- | --------------------------------------------- |
+| Santiago Ramirez | Frontend lead                                 |
+| Matias Camaran   | Proposed project coordinator and backend lead |
+| Hussain          | Proposed integrations and quality lead        |
 
-The proposal recommends TypeScript, React, Node.js, and PostgreSQL. Stack and remaining role decisions await team agreement; the application has not yet been scaffolded. Review the proposal against the instructor's challenge statement and the assigned textbook before submission.
+The scaffold uses TypeScript, React, and Node.js; PostgreSQL integration remains planned. The proposal records the broader scope and proposed team responsibilities.
