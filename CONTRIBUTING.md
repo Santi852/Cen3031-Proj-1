@@ -6,7 +6,7 @@ GitHub stores the team's source code, project documents, dependency manifests an
 
 ## Making a change
 
-1. Select or create a GitHub issue with an owner and acceptance criteria.
+1. Select or create a GitHub issue with an owner and acceptance criteria. Use the [Task issue template](.github/ISSUE_TEMPLATE/task.md) for new tasks and select one accountable assignee in GitHub.
 2. Update your local `main`, then create a short-lived branch such as `feature/weekly-leaderboard`, `fix/score-duplicates`, or `docs/project-proposal`.
 3. Make focused commits. Do not commit credentials, generated build output, or installed dependencies.
 4. Run checks appropriate to the change. Documentation changes require content/link review; application changes require the relevant tests and build once available.
