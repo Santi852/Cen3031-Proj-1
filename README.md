@@ -2,7 +2,7 @@
 
 A gamified, social platform that makes technical interview prep more engaging. Race friends on weekly leaderboards, unlock code discussions once you've solved a problem yourself, and track real coding activity across your IDE, GitHub, and LeetCode.
 
-## Core Features
+## Planned Features
 
 - **Weekly Leaderboards** — Compete with friends to solve the most LeetCode problems each week.
 - **Unlockable Code Discussions** — See and discuss other users' solutions to a problem, unlocked only after you've solved it yourself.
@@ -20,7 +20,56 @@ Task tracking and progress live on the [StackSprint project board](https://githu
 
 ## Status
 
-Early setup phase — tech stack and architecture details are being finalized in the project proposal.
+The TypeScript scaffold includes a React/Vite frontend, an Express API health endpoint, shared lint/format settings, and automated checks. PostgreSQL schema and migration tooling are available; backend authentication is still pending. The frontend sign-in/sign-up flow currently uses a development-only browser storage stub.
+
+## Local Setup
+
+Use the Node.js version pinned in `.nvmrc` and its bundled npm. The tooling requires Node.js 22.13 or newer in the Node 22 release line. With nvm installed, run these commands from the repository root:
+
+```bash
+git clone https://github.com/Santi852/Cen3031-Proj-1.git
+cd Cen3031-Proj-1
+
+nvm install
+nvm use
+npm ci
+npm run setup
+cp backend/.env.example backend/.env
+```
+
+`npm ci` installs the shared tooling; `npm run setup` installs the backend and frontend using their separate lockfiles. Keep `backend/.env` local and never commit credentials. `PORT` defaults to `3001`; `DATABASE_URL` configures database migrations; `JWT_SECRET` is a placeholder for future authentication work. The current health endpoint does not need database credentials or a JWT secret.
+
+Start each app in its own terminal, both from the repository root:
+
+```bash
+npm run dev:backend
+```
+
+```bash
+npm run dev:frontend
+```
+
+The API runs at http://localhost:3001 and the frontend at http://localhost:5173. Keep the API on port `3001` for the current frontend health check and browser test. A signed-out visit redirects to sign-in; the footer should show `API: ok`.
+
+For database setup, migrations, and database tests, follow the [database guide](backend/README.md). The current health endpoint and frontend can run without PostgreSQL.
+
+### Checks and builds
+
+Run these commands from the repository root:
+
+| Command                | What it runs                                                                |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `npm run check`        | Lint, formatting check, type checks, both builds, and backend tests         |
+| `npm run lint`         | Shared ESLint rules across the backend and frontend                         |
+| `npm run format:check` | Shared Prettier formatting check                                            |
+| `npm run typecheck`    | Backend and frontend TypeScript checks                                      |
+| `npm run build`        | Backend JavaScript in `backend/dist` and frontend assets in `frontend/dist` |
+| `npm test`             | Vitest API tests                                                            |
+| `npm run test:e2e`     | Playwright smoke test; starts both development servers automatically        |
+
+Before the first browser test, run `npx playwright install chromium` from `frontend/`. Then return to the repository root and run `npm run test:e2e`. Browser tests are separate from `npm run check`.
+
+After `npm run build`, run the compiled API with `npm start --prefix backend`. GitHub Actions (`.github/workflows/ci.yml`) validates the scaffold on pull requests and pushes to `main`.
 
 ## Development Environment and Project Proposal Plan
 
@@ -30,10 +79,10 @@ Early setup phase — tech stack and architecture details are being finalized in
 
 **Team name:** StackSprint.
 
-| Member | Role |
-| --- | --- |
-| Santiago Ramirez | Frontend lead |
-| Matias Camaran | Proposed project coordinator and backend lead |
-| Hussain | Proposed integrations and quality lead |
+| Member           | Role                                          |
+| ---------------- | --------------------------------------------- |
+| Santiago Ramirez | Frontend lead                                 |
+| Matias Camaran   | Proposed project coordinator and backend lead |
+| Hussain          | Proposed integrations and quality lead        |
 
-The proposal recommends TypeScript, React, Node.js, and PostgreSQL. Stack and remaining role decisions await team agreement; the application has not yet been scaffolded. Review the proposal against the instructor's challenge statement and the assigned textbook before submission.
+The scaffold uses TypeScript, React, and Node.js; PostgreSQL integration remains planned. The proposal records the broader scope and proposed team responsibilities.
