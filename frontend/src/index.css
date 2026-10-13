@@ -1,4 +1,4 @@
-@import './styles/tokens.css';
+@import "./styles/tokens.css";
 
 :root {
   font: var(--text-lg) / 145% var(--font-sans);
@@ -271,7 +271,7 @@ button.nav-link {
       outline: 2px solid var(--color-accent);
       outline-offset: 1px;
     }
-    &[aria-invalid='true'] {
+    &[aria-invalid="true"] {
       border-color: var(--color-danger);
     }
     &::placeholder {

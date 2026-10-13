@@ -8,7 +8,12 @@ type FormFieldProps = InputHTMLAttributes<HTMLInputElement> & {
 
 // Label + input + error message, wired together with aria attributes so
 // screen readers announce the error with the field.
-export default function FormField({ id, label, error, ...inputProps }: FormFieldProps) {
+export default function FormField({
+  id,
+  label,
+  error,
+  ...inputProps
+}: FormFieldProps) {
   const errorId = `${id}-error`;
   return (
     <div className="form-field">

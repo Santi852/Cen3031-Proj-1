@@ -1,8 +1,18 @@
 import { useState, type FormEvent } from "react";
-import { Link, Navigate, useLocation, useNavigate, type Location } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+  type Location,
+} from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { AuthError } from "../auth/authService";
-import { MIN_PASSWORD_LENGTH, validateSignUp, type FieldErrors } from "../auth/validation";
+import {
+  MIN_PASSWORD_LENGTH,
+  validateSignUp,
+  type FieldErrors,
+} from "../auth/validation";
 import ErrorMessage from "../components/ErrorMessage";
 import FormField from "../components/FormField";
 
@@ -10,7 +20,8 @@ export default function SignUp() {
   const { user, signUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: Location } | null)?.from?.pathname ?? "/";
+  const from =
+    (location.state as { from?: Location } | null)?.from?.pathname ?? "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +44,11 @@ export default function SignUp() {
       await signUp(email, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setFormError(err instanceof AuthError ? err.message : "Something went wrong. Try again.");
+      setFormError(
+        err instanceof AuthError
+          ? err.message
+          : "Something went wrong. Try again.",
+      );
       setSubmitting(false);
     }
   }
@@ -71,7 +86,11 @@ export default function SignUp() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           error={errors.confirmPassword}
         />
-        <button type="submit" className="button button-primary" disabled={submitting}>
+        <button
+          type="submit"
+          className="button button-primary"
+          disabled={submitting}
+        >
           {submitting ? "Creating account…" : "Sign up"}
         </button>
       </form>

@@ -8,7 +8,11 @@ type EmptyStateProps = {
 };
 
 // Show when a request succeeded but there's nothing to display yet.
-export default function EmptyState({ title, message, action }: EmptyStateProps) {
+export default function EmptyState({
+  title,
+  message,
+  action,
+}: EmptyStateProps) {
   return (
     <div className="state">
       <p className="state-title">{title}</p>

@@ -27,7 +27,9 @@ function readUsers(): StoredUser[] {
 async function hash(password: string): Promise<string> {
   const bytes = new TextEncoder().encode(password);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(digest), (b) =>
+    b.toString(16).padStart(2, "0"),
+  ).join("");
 }
 
 function startSession(user: User): User {
@@ -58,7 +60,9 @@ export async function signUp(email: string, password: string): Promise<User> {
 export async function signIn(email: string, password: string): Promise<User> {
   const normalized = email.trim().toLowerCase();
   const passwordHash = await hash(password);
-  const match = readUsers().find((u) => u.email === normalized && u.passwordHash === passwordHash);
+  const match = readUsers().find(
+    (u) => u.email === normalized && u.passwordHash === passwordHash,
+  );
   // Same message for unknown email and wrong password so the form doesn't
   // reveal which emails have accounts.
   if (!match) throw new AuthError("Incorrect email or password.");

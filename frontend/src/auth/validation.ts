@@ -1,4 +1,6 @@
-export type FieldErrors = Partial<Record<"email" | "password" | "confirmPassword", string>>;
+export type FieldErrors = Partial<
+  Record<"email" | "password" | "confirmPassword", string>
+>;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const MIN_PASSWORD_LENGTH = 8;
@@ -17,7 +19,11 @@ export function validateSignIn(email: string, password: string): FieldErrors {
   return errors;
 }
 
-export function validateSignUp(email: string, password: string, confirmPassword: string): FieldErrors {
+export function validateSignUp(
+  email: string,
+  password: string,
+  confirmPassword: string,
+): FieldErrors {
   const errors: FieldErrors = {};
   const emailError = validateEmail(email);
   if (emailError) errors.email = emailError;
@@ -30,6 +36,7 @@ export function validateSignUp(email: string, password: string, confirmPassword:
     errors.password = "Password must include a letter and a number.";
   }
 
-  if (confirmPassword !== password) errors.confirmPassword = "Passwords don't match.";
+  if (confirmPassword !== password)
+    errors.confirmPassword = "Passwords don't match.";
   return errors;
 }
