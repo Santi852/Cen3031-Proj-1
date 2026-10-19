@@ -69,6 +69,10 @@ Run these commands from the repository root:
 
 Before the first browser test, run `npx playwright install chromium` from `frontend/`. Then return to the repository root and run `npm run test:e2e`. Browser tests are separate from `npm run check`.
 
+The browser suite checks API health and the F-09 flow: create an account, sign out, reject an incorrect password, sign in, and reach the dashboard. It also verifies that a session survives a reload and signed-out visitors cannot access the dashboard. Each test runs in an isolated browser context. Authentication currently uses the frontend's browser storage stub; these tests do not verify PostgreSQL accounts or the pending F-06 API integration.
+
+Playwright writes an HTML report to `frontend/playwright-report` and retains traces for failed tests. CI uploads the report when a check fails. Environment files such as `.env.test` and `.env.production` are ignored; only placeholder `.env.example` files should be committed.
+
 After `npm run build`, run the compiled API with `npm start --prefix backend`. GitHub Actions (`.github/workflows/ci.yml`) validates the scaffold on pull requests and pushes to `main`.
 
 ## Development Environment and Project Proposal Plan
