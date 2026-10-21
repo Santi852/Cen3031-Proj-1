@@ -289,3 +289,40 @@ button.nav-link {
 .auth-switch {
   font-size: 15px;
 }
+
+/* Link account (1-05) */
+.difficulty-counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  max-width: var(--form-width);
+  margin: var(--space-5) auto;
+
+  div {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  dt {
+    font-size: var(--text-sm);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+  }
+}
+
+.difficulty-easy dd {
+  color: var(--color-easy);
+}
+
+.difficulty-medium dd {
+  color: var(--color-medium);
+}
+
+.difficulty-hard dd {
+  color: var(--color-hard);
+}
