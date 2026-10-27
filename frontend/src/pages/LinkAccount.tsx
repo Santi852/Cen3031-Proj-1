@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import DifficultyBreakdown from "../components/DifficultyBreakdown";
 import ErrorMessage from "../components/ErrorMessage";
 import FormField from "../components/FormField";
 import {
@@ -94,7 +95,6 @@ export default function LinkAccount() {
 }
 
 function LinkedView({ account }: { account: LinkedAccount }) {
-  const { easy, medium, hard } = account.counts;
   return (
     <section>
       <h2>Account linked</h2>
@@ -102,20 +102,7 @@ function LinkedView({ account }: { account: LinkedAccount }) {
         <strong>{account.username}</strong> is now connected. Here's what you've
         solved so far:
       </p>
-      <dl className="difficulty-counts">
-        <div className="difficulty-easy">
-          <dt>Easy</dt>
-          <dd>{easy}</dd>
-        </div>
-        <div className="difficulty-medium">
-          <dt>Medium</dt>
-          <dd>{medium}</dd>
-        </div>
-        <div className="difficulty-hard">
-          <dt>Hard</dt>
-          <dd>{hard}</dd>
-        </div>
-      </dl>
+      <DifficultyBreakdown counts={account.counts} />
       <Link to="/" className="button button-primary">
         Go to dashboard
       </Link>

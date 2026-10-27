@@ -45,7 +45,8 @@ function formatAgo(iso: string, now: number) {
   return relative.format(Math.round(hours / 24), "day");
 }
 
-export default function RefreshButton() {
+// onSynced runs after a successful sync, so the page can reload its data.
+export default function RefreshButton({ onSynced }: { onSynced?: () => void }) {
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [cooldownEndsAt, setCooldownEndsAt] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -81,6 +82,7 @@ export default function RefreshButton() {
     setError(null);
     try {
       apply(await syncLeetCode());
+      onSynced?.();
     } catch (err) {
       if (err instanceof SyncError && err.kind === "cooldown") {
         // Our clock and the server's disagreed; trust the server.

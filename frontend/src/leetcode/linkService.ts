@@ -22,6 +22,14 @@ export class LinkError extends Error {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Stands in for the linked account the real 1-04 saves in the database, so
+// the dashboard stub can see a link made on this page. Resets on page reload.
+let linkedUsername: string | null = null;
+
+export function getLinkedUsername() {
+  return linkedUsername;
+}
+
 // Stub usernames for testing by hand: "missing-user", "private-user", "down".
 // Anything else succeeds.
 export async function linkLeetCode(username: string): Promise<LinkedAccount> {
@@ -44,6 +52,7 @@ export async function linkLeetCode(username: string): Promise<LinkedAccount> {
         "LeetCode isn't responding right now. Try again in a few minutes.",
       );
     default:
+      linkedUsername = username;
       return { username, counts: { easy: 42, medium: 17, hard: 3 } };
   }
 }
