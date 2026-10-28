@@ -155,7 +155,9 @@ export default function Dashboard() {
 
   return (
     <section>
-      <h2>Dashboard</h2>
+      {/* The nav already shows where you are, so the title is hidden on
+          screen. Screen readers still use it to understand the page. */}
+      <h2 className="visually-hidden">Dashboard</h2>
       {body}
     </section>
   );
