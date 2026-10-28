@@ -96,7 +96,11 @@ export default function Dashboard() {
           <div>
             <h3 id="leetcode-card-title">LeetCode solves</h3>
             <p className="dashboard-card-subtitle">
-              {username}
+              {/* Its own element so CSS can shorten a long name with "…";
+                  title shows the full name on hover. */}
+              <span className="dashboard-card-username" title={username}>
+                {username}
+              </span>
               {IS_DEMO && (
                 <span
                   className="demo-badge"

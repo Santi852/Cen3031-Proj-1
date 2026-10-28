@@ -14,7 +14,10 @@ export default function Layout() {
   const [apiStatus, setApiStatus] = useState("checking...");
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/health")
+    // Relative URL, like the auth calls: Vite's dev proxy forwards /api to
+    // the backend. A hard-coded localhost:3001 broke on other devices, where
+    // "localhost" means the phone, not the dev machine.
+    fetch("/api/health")
       .then((res) => res.json())
       .then((data) => setApiStatus(data.status))
       .catch(() => setApiStatus("unreachable"));
