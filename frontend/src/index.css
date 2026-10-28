@@ -580,19 +580,19 @@ button.nav-link {
     color: var(--color-text-strong);
   }
 }
-.tab-bar .icon{
+.tab-bar .icon {
   width: 20px;
   height: 20px;
 }
 @media (max-width: 480px) {
-  .tab-bar{
+  .tab-bar {
     position: fixed;
     left: 0;
-    bottom: 0; 
+    bottom: 0;
     right: 0;
     z-index: 10;
 
-    display:grid;
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
     background: var(--color-accent-bg);
     border-top: 1px solid var(--color-border);
@@ -603,7 +603,7 @@ button.nav-link {
     flex-direction: column;
     font-size: var(--text-xs);
   }
-  .tab-bar .icon{
+  .tab-bar .icon {
     width: 24px;
     height: 24px;
   }
@@ -611,4 +611,79 @@ button.nav-link {
   .app-shell > main {
     padding-bottom: 96px;
   }
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.top-bar .icon-button {
+  height: 44px;
+  width: 44px;
+  color: inherit;
+}
+.avatar {
+  border-radius: 50%;
+  height: 44px;
+  width: 44px;
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.top-bar .icon {
+  width: 24px;
+  height: 24px;
+}
+/* Help sheet: a centered modal on desktop, a bottom sheet on phones. */
+.help-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+@media (max-width: 480px) {
+  .help-sheet {
+    margin: auto 0 0;
+    max-width: 100%;
+    border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(0);
+    transition: transform 250ms ease-out;
+
+    @starting-style {
+      transform: translateY(100%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-sheet {
+    transition: none;
+  }
+}
+
+.help-sheet::backdrop {
+  background: rgb(0 0 0 / 0.7);
+}
+
+.help-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.help-sheet-content {
+  padding: var(--space-4);
+  /* Keeps the last section clear of the iPhone home indicator (0 elsewhere). */
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
 }

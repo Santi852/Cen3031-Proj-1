@@ -1,6 +1,8 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { DashboardIcon, ProfileIcon, TrophyIcon } from "./icons";
+import HelpSheet from "./HelpSheet";
+import { DashboardIcon, HelpIcon, ProfileIcon, TrophyIcon } from "./icons";
 import { useApiStatus } from "./useApiStatus";
 
 export default function Layout() {
@@ -9,7 +11,7 @@ export default function Layout() {
   return (
     <div className="app-shell">
       <header>
-        <h1>StackSprint</h1>
+        <TopBar />
         {user && <TabBar />}
       </header>
       <main>
@@ -19,6 +21,36 @@ export default function Layout() {
           lands on /signin and checks for "API: ok", so it has to live here.
           Signed-in users see the API status on their Profile page. */}
       {!user && <SignedOutFooter />}
+    </div>
+  );
+}
+
+// Help on the left next to the title, profile on the right. The help button
+// opens the help sheet.
+function TopBar() {
+  const { user } = useAuth();
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  return (
+    <div className="top-bar">
+      <button
+        type="button"
+        className="icon-button"
+        aria-label="Help"
+        aria-expanded={helpOpen}
+        onClick={() => setHelpOpen(true)}
+      >
+        <HelpIcon />
+      </button>
+      <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <h1>StackSprint</h1>
+      {/* Placeholder: the user's first initial. To be replaced by the
+          customizable badge. */}
+      {user && (
+        <Link to="/profile" className="avatar" aria-label="Profile">
+          {user.email[0].toUpperCase()}
+        </Link>
+      )}
     </div>
   );
 }
