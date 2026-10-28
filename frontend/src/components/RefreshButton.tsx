@@ -1,28 +1,8 @@
-import { useEffect, useState } from "react";
 import ErrorMessage from "./ErrorMessage";
-import {
-  getSyncStatus,
-  SyncError,
-  syncLeetCode,
-  type SyncStatus,
-} from "../leetcode/syncService";
+import type { SyncState } from "../leetcode/useSync";
 
-// Re-render every `intervalMs` so time-based text (countdown, "5 minutes ago")
-// stays current. The tick only triggers renders; the math always uses real
-// timestamps, so a slow or paused timer can't make the countdown wrong.
-function useNow(intervalMs: number) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-  return now;
-}
-
-// The server reports whole minutes; we turn that into an end time once and
-// count down to it, instead of decrementing a counter.
-const endsAt = (minutes: number) =>
-  minutes > 0 ? Date.now() + minutes * 60_000 : null;
+// Both components below take the result of useSync(), so the icon and the
+// status line can sit in different parts of the card.
 
 // 754000 ms -> "12:34"
 function formatCountdown(ms: number) {
@@ -45,93 +25,68 @@ function formatAgo(iso: string, now: number) {
   return relative.format(Math.round(hours / 24), "day");
 }
 
-// onSynced runs after a successful sync, so the page can reload its data.
-export default function RefreshButton({ onSynced }: { onSynced?: () => void }) {
-  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
-  const [cooldownEndsAt, setCooldownEndsAt] = useState<number | null>(null);
-  const [syncing, setSyncing] = useState(false);
-  const [error, setError] = useState<SyncError | null>(null);
-
-  // One re-render per second is cheap, and it keeps the countdown and the
-  // "x minutes ago" text current. Render must not call Date.now() itself
-  // (React's purity rule), so all time math below uses `now`.
-  const now = useNow(1000);
-  const remainingMs = cooldownEndsAt ? cooldownEndsAt - now : 0;
-  const coolingDown = remainingMs > 0;
-
-  function apply(status: SyncStatus) {
-    setLastSyncedAt(status.lastSyncedAt);
-    setCooldownEndsAt(endsAt(status.minutesRemaining));
-  }
-
-  // Load the current status on mount, so a page reload mid-cooldown still
-  // shows the countdown. `cancelled` stops a late response from updating
-  // the component after it has unmounted.
-  useEffect(() => {
-    let cancelled = false;
-    void getSyncStatus().then((status) => {
-      if (!cancelled) apply(status);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  async function sync() {
-    setSyncing(true);
-    setError(null);
-    try {
-      apply(await syncLeetCode());
-      onSynced?.();
-    } catch (err) {
-      if (err instanceof SyncError && err.kind === "cooldown") {
-        // Our clock and the server's disagreed; trust the server.
-        setCooldownEndsAt(endsAt(err.minutesRemaining));
-      } else {
-        setError(
-          err instanceof SyncError
-            ? err
-            : new SyncError("unavailable", "Something went wrong. Try again."),
-        );
-      }
-    } finally {
-      setSyncing(false);
-    }
-  }
-
-  let label = "Refresh";
-  if (syncing) label = "Syncing…";
-  else if (coolingDown) label = `Refresh in ${formatCountdown(remainingMs)}`;
+// Icon-only refresh button. An icon has no text for screen readers, so the
+// label goes in aria-label (and title, for a hover tooltip) and changes with
+// the state, countdown included.
+export function RefreshButton({ sync }: { sync: SyncState }) {
+  let label = "Refresh LeetCode data";
+  if (sync.syncing) label = "Syncing…";
+  else if (sync.coolingDown)
+    label = `Refresh available in ${formatCountdown(sync.remainingMs)}`;
 
   return (
-    <div className="sync-panel">
-      <button
-        type="button"
-        className="button button-secondary sync-button"
-        onClick={() => void sync()}
-        disabled={syncing || coolingDown}
-        aria-busy={syncing}
+    <button
+      type="button"
+      className="icon-button sync-button"
+      onClick={sync.sync}
+      disabled={sync.syncing || sync.coolingDown}
+      aria-busy={sync.syncing}
+      aria-label={label}
+      title={label}
+    >
+      {/* A circular arrow. currentColor = it takes the button's text color. */}
+      <svg
+        className="sync-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
       >
-        {syncing && <span className="spinner spinner-sm" aria-hidden="true" />}
-        {label}
-      </button>
+        <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+        <path d="M21 3v6h-6" />
+      </svg>
+    </button>
+  );
+}
+
+// "Last synced 4 hours ago", plus the cooldown countdown (1-09 requires it to
+// be visible, and the icon can't show it) and any sync error.
+export function SyncStatus({ sync }: { sync: SyncState }) {
+  return (
+    <div className="sync-panel">
       {/* Not aria-live: a countdown announced every second would be noise. */}
       <p className="sync-meta">
-        {lastSyncedAt ? (
+        {sync.lastSyncedAt ? (
           <>
             Last synced{" "}
             <time
-              dateTime={lastSyncedAt}
-              title={new Date(lastSyncedAt).toLocaleString()}
+              dateTime={sync.lastSyncedAt}
+              title={new Date(sync.lastSyncedAt).toLocaleString()}
             >
-              {formatAgo(lastSyncedAt, now)}
+              {formatAgo(sync.lastSyncedAt, sync.now)}
             </time>
           </>
         ) : (
           "Not synced yet"
         )}
+        {sync.coolingDown && (
+          <> · Refresh in {formatCountdown(sync.remainingMs)}</>
+        )}
       </p>
-      {error && <ErrorMessage message={error.message} />}
+      {sync.error && <ErrorMessage message={sync.error.message} />}
     </div>
   );
 }

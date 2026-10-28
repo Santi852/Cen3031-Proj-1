@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DifficultyBreakdown from "../components/DifficultyBreakdown";
+import DifficultyRing from "../components/DifficultyRing";
 import EmptyState from "../components/EmptyState";
 import ErrorMessage from "../components/ErrorMessage";
 import Loading from "../components/Loading";
-import RefreshButton from "../components/RefreshButton";
+import { RefreshButton, SyncStatus } from "../components/RefreshButton";
 import {
   getDashboard,
   IS_DEMO,
   type DashboardData,
   type DashboardRange,
 } from "../leetcode/dashboardService";
+import { useSync } from "../leetcode/useSync";
 
 const RANGES: { value: DashboardRange; label: string }[] = [
   { value: "week", label: "This week" },
@@ -60,6 +62,8 @@ export default function Dashboard() {
   }, [range, reloads]);
 
   const reload = () => setReloads((n) => n + 1);
+  // Shared by the refresh icon (header) and the status line (footer).
+  const sync = useSync(reload);
 
   let body;
   if (result && !result.ok && !loading) {
@@ -81,7 +85,6 @@ export default function Dashboard() {
   } else {
     const { username, counts } = data.leetcode;
     const total = counts.easy + counts.medium + counts.hard;
-    const rangeLabel = RANGES.find((r) => r.value === range)?.label;
 
     body = (
       <section
@@ -104,23 +107,25 @@ export default function Dashboard() {
               )}
             </p>
           </div>
-          <RefreshButton onSynced={reload} />
+          <div className="dashboard-card-actions">
+            <RefreshButton sync={sync} />
+            {/* The range filters everything in the card, so it sits at the
+                top. aria-pressed tells screen readers which one is selected. */}
+            <div className="range-toggle" role="group" aria-label="Time range">
+              {RANGES.map((r) => (
+                <button
+                  key={r.value}
+                  type="button"
+                  className="range-toggle-option"
+                  aria-pressed={range === r.value}
+                  onClick={() => setRange(r.value)}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </header>
-
-        {/* aria-pressed tells screen readers which range is selected. */}
-        <div className="range-toggle" role="group" aria-label="Time range">
-          {RANGES.map((r) => (
-            <button
-              key={r.value}
-              type="button"
-              className="range-toggle-option"
-              aria-pressed={range === r.value}
-              onClick={() => setRange(r.value)}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
 
         {total === 0 ? (
           <EmptyState
@@ -128,13 +133,18 @@ export default function Dashboard() {
             message="Solve a problem on LeetCode, then hit Refresh."
           />
         ) : (
-          <>
-            <p className="dashboard-total">
-              <strong>{total}</strong> solved · {rangeLabel?.toLowerCase()}
-            </p>
+          // The ring's center shows the total, so no separate total line.
+          <div className="dashboard-breakdown">
+            <DifficultyRing counts={counts} />
             <DifficultyBreakdown counts={counts} />
-          </>
+          </div>
         )}
+
+        {/* "Last synced" is good-to-know, not something to act on, so it
+            sits quietly at the bottom of the card. */}
+        <footer className="dashboard-card-footer">
+          <SyncStatus sync={sync} />
+        </footer>
       </section>
     );
   }
