@@ -6,6 +6,7 @@ import SignUp from "./pages/SignUp";
 import LinkAccount from "./pages/LinkAccount";
 import Leaderboard from "./pages/Leaderboard";
 import Problem from "./pages/Problem";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import RequireAuth from "./auth/RequireAuth";
 
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/" element={<Layout />}>
         <Route element={<RequireAuth />}>
           <Route index element={<Dashboard />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="link-account" element={<LinkAccount />} />
           <Route path="problem/:slug" element={<Problem />} />
         </Route>

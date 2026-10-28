@@ -1,72 +1,67 @@
-import { useEffect, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  isActive ? "nav-link active" : "nav-link";
+import { DashboardIcon, ProfileIcon, TrophyIcon } from "./icons";
+import { useApiStatus } from "./useApiStatus";
 
 export default function Layout() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  // Moved here from Dashboard: "/" now redirects signed-out visitors to
-  // /signin, and Hussain's Playwright smoke test still needs "API: ok"
-  // visible after loading "/". The footer renders on every page.
-  const [apiStatus, setApiStatus] = useState("checking...");
-
-  useEffect(() => {
-    // Relative URL, like the auth calls: Vite's dev proxy forwards /api to
-    // the backend. A hard-coded localhost:3001 broke on other devices, where
-    // "localhost" means the phone, not the dev machine.
-    fetch("/api/health")
-      .then((res) => res.json())
-      .then((data) => setApiStatus(data.status))
-      .catch(() => setApiStatus("unreachable"));
-  }, []);
-
-  async function handleSignOut() {
-    await signOut();
-    navigate("/signin");
-  }
+  const { user } = useAuth();
 
   return (
     <div className="app-shell">
       <header>
         <h1>StackSprint</h1>
-        <nav>
-          <NavLink to="/" end className={navClass}>
-            Dashboard
-          </NavLink>
-          <NavLink to="/leaderboard" className={navClass}>
-            Leaderboard
-          </NavLink>
-          <NavLink to="/link-account" className={navClass}>
-            Link Account
-          </NavLink>
-          {user ? (
-            <>
-              <span className="nav-user">{user.email}</span>
-              <button
-                type="button"
-                className="nav-link"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <NavLink to="/signin" className={navClass}>
-              Sign in
-            </NavLink>
-          )}
-        </nav>
+        {user && <TabBar />}
       </header>
       <main>
         <Outlet />
       </main>
-      <footer>
-        <p> CEN3031 &middot; Santiago, Matias, Hussain</p>
-        <p>API: {apiStatus}</p>
-      </footer>
+      {/* Signed-out pages only. Hussain's Playwright smoke test loads "/",
+          lands on /signin and checks for "API: ok", so it has to live here.
+          Signed-in users see the API status on their Profile page. */}
+      {!user && <SignedOutFooter />}
     </div>
+  );
+}
+
+// One nav for every screen size: a row under the title on desktop, pinned to
+// the bottom of the screen on phones (see the CSS). Dashboard sits in the
+// middle as the home tab, like most mobile apps.
+function TabBar() {
+  const { pathname } = useLocation();
+  // Link Account is reached from Profile, so Profile stays highlighted there.
+  const onProfile = pathname.startsWith("/link-account");
+
+  const tabClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "tab active" : "tab";
+
+  return (
+    <nav className="tab-bar" aria-label="Main">
+      <NavLink to="/leaderboard" className={tabClass}>
+        <TrophyIcon />
+        <span className="tab-label">Leaderboard</span>
+      </NavLink>
+      <NavLink to="/" end className={tabClass}>
+        <DashboardIcon />
+        <span className="tab-label">Dashboard</span>
+      </NavLink>
+      <NavLink
+        to="/profile"
+        className={({ isActive }) =>
+          tabClass({ isActive: isActive || onProfile })
+        }
+      >
+        <ProfileIcon />
+        <span className="tab-label">Profile</span>
+      </NavLink>
+    </nav>
+  );
+}
+
+function SignedOutFooter() {
+  const apiStatus = useApiStatus();
+  return (
+    <footer>
+      <p>API: {apiStatus}</p>
+    </footer>
   );
 }
