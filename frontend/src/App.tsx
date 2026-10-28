@@ -16,11 +16,11 @@ export default function App() {
       <Route path="/" element={<Layout />}>
         <Route element={<RequireAuth />}>
           <Route index element={<Dashboard />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="profile" element={<Profile />} />
           <Route path="link-account" element={<LinkAccount />} />
           <Route path="problem/:slug" element={<Problem />} />
         </Route>
-        <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
         <Route path="*" element={<NotFound />} />

@@ -43,7 +43,13 @@ function TopBar() {
         <HelpIcon />
       </button>
       <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
-      <h1>StackSprint</h1>
+      {/* Tapping the name goes home, like most apps. Signed out, "/" sends
+          you on to sign-in. */}
+      <h1>
+        <Link to="/" className="brand-link">
+          StackSprint
+        </Link>
+      </h1>
       {/* Placeholder: the user's first initial. To be replaced by the
           customizable badge. */}
       {user && (

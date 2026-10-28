@@ -43,8 +43,9 @@ export default function HelpSheet({
         <section>
           <h3>Scoring</h3>
           <p>
-            Easy problems are worth 1 point, Medium 3 and Hard 5. Only your
-            first solve of a problem counts.
+            Easy problems are worth 1 point, Medium 3 and Hard 5. Scores are
+            weekly (UTC): only problems you solve for the first time this week
+            count, and repeat solves score zero.
           </p>
         </section>
 
