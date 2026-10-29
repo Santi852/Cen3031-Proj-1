@@ -48,11 +48,31 @@ const PROBLEMS: Problem[] = [
     title: "Median of Two Sorted Arrays",
     difficulty: "hard",
   },
+  { slug: "add-two-numbers", title: "Add Two Numbers", difficulty: "medium" },
+  { slug: "palindrome-number", title: "Palindrome Number", difficulty: "easy" },
+  { slug: "3sum", title: "3Sum", difficulty: "medium" },
+  {
+    slug: "best-time-to-buy-and-sell-stock",
+    title: "Best Time to Buy and Sell Stock",
+    difficulty: "easy",
+  },
+  { slug: "reverse-integer", title: "Reverse Integer", difficulty: "medium" },
+  {
+    slug: "trapping-rain-water",
+    title: "Trapping Rain Water",
+    difficulty: "hard",
+  },
 ];
 
 // Stands in for the permanent unlock records 1-18 keeps in the database.
-// Two Sum starts unlocked so both views are easy to reach. Resets on reload.
-const unlocked = new Set<string>(["two-sum"]);
+// A verified solve is what unlocks a discussion, so "unlocked" and "solved"
+// are the same thing here. Two Sum and 3Sum start solved so both views are
+// easy to reach. Resets on reload.
+const unlocked = new Set<string>(["two-sum", "3sum"]);
+
+// Your starred problems. Needs per-user storage on the server, so it's part
+// of the Problems tab pitch; resets on reload until then.
+const favorites = new Set<string>();
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -92,4 +112,27 @@ export async function checkSolve(slug: string): Promise<Discussion> {
 // For the sample links on the page; the real list would come from the API.
 export function listSampleProblems() {
   return PROBLEMS;
+}
+
+export type ProblemListItem = Problem & {
+  solved: boolean; // a verified solve, which also unlocks the discussion
+  favorite: boolean;
+};
+
+// The Problems tab: every problem, whether you've solved it, and whether
+// you starred it. There's no backlog item for this endpoint yet; pitch it.
+export async function listProblems(): Promise<ProblemListItem[]> {
+  await wait(400);
+  return PROBLEMS.map((p) => ({
+    ...p,
+    solved: unlocked.has(p.slug),
+    favorite: favorites.has(p.slug),
+  }));
+}
+
+export async function setFavorite(slug: string, favorite: boolean) {
+  await wait(200);
+  findProblem(slug);
+  if (favorite) favorites.add(slug);
+  else favorites.delete(slug);
 }

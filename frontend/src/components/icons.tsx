@@ -76,11 +76,79 @@ export function PlayIcon() {
   );
 }
 
+export function CodeIcon() {
+  return (
+    <Icon>
+      <path d="M8 6l-6 6 6 6M16 6l6 6-6 6" />
+    </Icon>
+  );
+}
+
+export function CheckCircleIcon() {
+  return (
+    <Icon>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12.5l2.5 2.5L16 9.5" />
+    </Icon>
+  );
+}
+
+export function CircleIcon() {
+  return (
+    <Icon>
+      <circle cx="12" cy="12" r="9" />
+    </Icon>
+  );
+}
+
+// Outline by default; CSS fills it in for favorites (fill: currentColor).
+export function StarIcon() {
+  return (
+    <Icon>
+      <path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.6l6.2-.9z" />
+    </Icon>
+  );
+}
+
+export function ExternalLinkIcon() {
+  return (
+    <Icon>
+      <path d="M14 4h6v6M20 4l-9 9" />
+      <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+    </Icon>
+  );
+}
+
+export function SortIcon() {
+  return (
+    <Icon>
+      <path d="M8 10l4-4 4 4M8 14l4 4 4-4" />
+    </Icon>
+  );
+}
+
 export function LockIcon() {
   return (
     <Icon>
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </Icon>
+  );
+}
+
+export function ArrowUpRightIcon() {
+  return (
+    <Icon>
+      <path d="M7 17L17 7M8 7h9v9" />
+    </Icon>
+  );
+}
+
+// Outline by default; CSS fills it in once you've liked the post.
+export function HeartIcon() {
+  return (
+    <Icon>
+      <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" />
     </Icon>
   );
 }

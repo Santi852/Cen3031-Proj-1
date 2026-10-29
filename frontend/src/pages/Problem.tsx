@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
-import { LockIcon } from "../components/icons";
+import { ExternalLinkIcon, LockIcon } from "../components/icons";
 import Loading from "../components/Loading";
 import PostList from "../components/PostList";
 import {
@@ -97,11 +97,14 @@ function ProblemHeader({ problem }: { problem: ProblemInfo }) {
           {DIFFICULTY_LABEL[problem.difficulty]}
         </span>
         <a
+          className="leetcode-pill"
           href={`https://leetcode.com/problems/${problem.slug}/`}
           target="_blank"
           rel="noreferrer"
         >
-          Open on LeetCode
+          LeetCode
+          <ExternalLinkIcon />
+          <span className="visually-hidden">(opens in a new tab)</span>
         </a>
         {IS_DEMO && (
           <span

@@ -6,6 +6,7 @@ import SignUp from "./pages/SignUp";
 import LinkAccount from "./pages/LinkAccount";
 import Leaderboard from "./pages/Leaderboard";
 import Problem from "./pages/Problem";
+import Problems from "./pages/Problems";
 import PostDetail from "./pages/PostDetail";
 import PostEditor from "./pages/PostEditor";
 import Profile from "./pages/Profile";
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="profile" element={<Profile />} />
           <Route path="link-account" element={<LinkAccount />} />
+          <Route path="problems" element={<Problems />} />
           <Route path="problem/:slug" element={<Problem />} />
           <Route path="problem/:slug/new" element={<PostEditor />} />
           <Route path="problem/:slug/posts/:postId" element={<PostDetail />} />

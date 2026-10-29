@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  LANGUAGES,
-  labelFor,
-  listPosts,
-  type Post,
-} from "../leetcode/postService";
-import CodeBlock from "./CodeBlock";
+import { listPosts, type Post } from "../leetcode/postService";
 import EmptyState from "./EmptyState";
 import ErrorMessage from "./ErrorMessage";
+import { ArrowUpRightIcon } from "./icons";
 import Loading from "./Loading";
 import PostMeta from "./PostMeta";
-
-// The list shows the start of each solution; the full post is one tap away.
-const PREVIEW_LINES = 8;
 
 type Result =
   | { key: string; ok: true; posts: Post[] }
@@ -73,31 +65,22 @@ export default function PostList({ slug }: { slug: string }) {
 
   return (
     <ul className="post-list">
-      {result.posts.map((post) => {
-        const lines = post.code.split("\n");
-        const truncated = lines.length > PREVIEW_LINES;
-        return (
-          <li key={post.id}>
-            <article className="post-card">
-              <PostMeta post={post} />
-              <div className={truncated ? "post-preview truncated" : undefined}>
-                <CodeBlock
-                  code={lines.slice(0, PREVIEW_LINES).join("\n")}
-                  language={post.language}
-                  label={`${labelFor(LANGUAGES, post.language)} solution by ${post.authorName}, preview`}
-                />
-              </div>
-              <Link
-                className="post-card-link"
-                to={`/problem/${slug}/posts/${post.id}`}
-              >
-                Read full post
-                <span className="visually-hidden"> by {post.authorName}</span>
-              </Link>
-            </article>
-          </li>
-        );
-      })}
+      {result.posts.map((post) => (
+        <li key={post.id}>
+          {/* The whole card is the link, so anywhere on it is a tap target.
+              The code stays on the post's own page. */}
+          <Link className="post-card" to={`/problem/${slug}/posts/${post.id}`}>
+            <div className="post-card-header">
+              <h4 className="post-card-title">{post.title}</h4>
+              <ArrowUpRightIcon />
+            </div>
+            <PostMeta post={post} />
+            {post.comment && (
+              <p className="post-card-comment">{post.comment}</p>
+            )}
+          </Link>
+        </li>
+      ))}
     </ul>
   );
 }

@@ -4,6 +4,10 @@
   font: var(--text-lg) / 145% var(--font-sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
+  /* Stops iPhone Safari from enlarging text in wide, sideways-scrolling
+     areas (like the code block) on its own. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   color: var(--color-text);
   background: var(--color-bg);
   font-synthesis: none;
@@ -593,7 +597,7 @@ button.nav-link {
     z-index: 10;
 
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     /* The accent tint is see-through on its own, so it's layered over the
        page color: same look, but content scrolling underneath stays hidden. */
     background:
@@ -887,6 +891,30 @@ button.nav-link {
   font-size: var(--text-sm);
 }
 
+/* The LeetCode link as a pill, next to the difficulty pill. */
+.leetcode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 .difficulty-pill {
   padding: 2px var(--space-2);
   border-radius: 999px;
@@ -966,6 +994,8 @@ button.nav-link {
   margin: 0;
 }
 
+/* The whole card is a link, so it resets the link look and shows it's
+   tappable with the arrow and a hover border instead. */
 .post-card {
   display: flex;
   flex-direction: column;
@@ -974,17 +1004,58 @@ button.nav-link {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 150ms;
+
+  &:hover {
+    border-color: var(--color-accent);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
-.post-card-link {
-  align-self: flex-start;
-  font-size: var(--text-sm);
+.post-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+
+  .icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-muted);
+  }
+}
+
+.post-card:hover .post-card-header .icon {
+  color: var(--color-accent);
+}
+
+.post-card-title {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: var(--text-lg);
   font-weight: var(--weight-medium);
 }
 
-/* Fades out the last preview lines when the code goes on. */
-.post-preview.truncated {
-  mask-image: linear-gradient(to bottom, black 65%, transparent);
+/* A taste of the comment: at most 3 lines, then "…". */
+.post-card-comment {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-sm);
 }
 
 .post-meta {
@@ -1039,13 +1110,79 @@ button.nav-link {
   }
 }
 
+/* Back / cancel, as a pill like the LeetCode link. */
 .back-link {
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-strong);
   font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
 }
 
-/* Notes keep the writer's line breaks. */
-.post-notes {
+/* Post title on the left, the like heart on the right. */
+.post-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.post-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.like-button {
+  /* Keeps the 44px tap target without making the title row taller, which
+     would push the byline away from the title. */
+  margin-block: -8px;
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+
+  .icon {
+    width: 26px;
+    height: 26px;
+  }
+  &:hover {
+    background: var(--color-danger-bg);
+    color: var(--color-hard);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+  }
+  &.is-liked {
+    color: var(--color-hard);
+  }
+  &.is-liked .icon {
+    fill: currentColor;
+  }
+}
+
+/* Comments keep the writer's line breaks. */
+.post-comment {
   margin: 0;
   white-space: pre-wrap;
 }
@@ -1084,15 +1221,57 @@ button.nav-link {
   tab-size: 4;
 }
 
+/* Read-only code, laid out like an editor. Lines never wrap (white-space:
+   pre), so indentation stays readable; the block scrolls sideways instead. */
 .code-block {
-  padding: 12px;
+  padding: 12px 12px 12px 0;
   overflow-x: auto;
   white-space: pre;
+
+  /* Undo the global inline code style: as inline-flex, every highlighted
+     token became a flex item and the spaces and line breaks between them
+     disappeared. max-content makes it as wide as the longest line, so every
+     row (and its pinned number) spans the full scroll width. */
+  code {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
 
   &:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 1px;
   }
+}
+
+.code-line {
+  display: block;
+}
+
+/* Scrolls with its line, so it never covers the code. */
+.line-number {
+  display: inline-block;
+  width: var(--gutter, 2ch);
+  padding: 0 var(--space-3);
+  color: var(--color-text-muted);
+  text-align: right;
+  user-select: none;
+}
+
+/* Indent guides: a 1px line at the start of every 4 spaces of indent. */
+.code-indent {
+  background-image: linear-gradient(
+    to right,
+    var(--color-border) 1px,
+    transparent 1px
+  );
+  background-size: 4ch 100%;
 }
 
 .code-editor {
@@ -1189,4 +1368,192 @@ button.nav-link {
 .token.operator,
 .token.punctuation {
   color: var(--color-text);
+}
+
+/* Problems tab */
+.problems-page {
+  max-width: 720px;
+  margin-inline: auto;
+  text-align: left;
+}
+
+.problem-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface);
+  font-size: var(--text-md);
+
+  th,
+  td {
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: none;
+  }
+
+  thead th {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Solved rows get a faint tint, like the reference. */
+.problem-table tr.is-solved {
+  background: var(--color-accent-bg);
+}
+
+/* .problem-table in front so this beats the table's own text-align. */
+.problem-table .col-status,
+.problem-table .col-star {
+  width: 44px;
+  text-align: center;
+}
+
+.status-solved {
+  color: var(--color-easy);
+}
+
+.status-todo {
+  color: var(--color-border);
+}
+
+.status-solved,
+.status-todo {
+  display: inline-flex;
+}
+
+/* The button is the tap target; the star inside stays icon-sized. */
+.star-button {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-gold);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-accent-bg);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+  }
+  &.is-favorite .icon {
+    fill: currentColor;
+  }
+}
+
+.col-title {
+  font-weight: 400;
+
+  a:first-child {
+    color: var(--color-text-strong);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
+}
+
+.external-link {
+  display: inline-flex;
+  margin-left: var(--space-2);
+  vertical-align: middle;
+  color: var(--color-text-muted);
+
+  .problem-table & .icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.col-difficulty {
+  white-space: nowrap;
+}
+
+.difficulty-lock {
+  display: inline-flex;
+  margin-right: var(--space-1);
+  vertical-align: -2px;
+  color: var(--color-text-muted);
+
+  .problem-table & .icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.difficulty-text {
+  font-weight: var(--weight-medium);
+}
+
+.difficulty-text.difficulty-easy {
+  color: var(--color-easy);
+}
+
+.difficulty-text.difficulty-medium {
+  color: var(--color-medium);
+}
+
+.difficulty-text.difficulty-hard {
+  color: var(--color-hard);
+}
+
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+
+  .problem-table & .icon {
+    width: 14px;
+    height: 14px;
+  }
+  &.is-active {
+    color: var(--color-accent);
+  }
+}
+
+/* Phones: tighter cells so the title gets the room. */
+@media (max-width: 480px) {
+  .problem-table {
+    font-size: var(--text-sm);
+
+    th,
+    td {
+      padding: var(--space-2) var(--space-1);
+    }
+  }
+
+  .problem-table .col-status,
+  .problem-table .col-star {
+    width: 36px;
+  }
 }

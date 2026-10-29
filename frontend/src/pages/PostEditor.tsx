@@ -11,7 +11,8 @@ import {
   getPost,
   LANGUAGES,
   MAX_CODE_LENGTH,
-  MAX_NOTES_LENGTH,
+  MAX_TITLE_LENGTH,
+  MAX_COMMENT_LENGTH,
   updatePost,
   type PostDraft,
 } from "../leetcode/postService";
@@ -20,25 +21,30 @@ type Field = keyof PostDraft;
 type FieldErrors = Partial<Record<Field, string>>;
 
 const EMPTY_DRAFT: PostDraft = {
+  title: "",
   language: "",
   timeComplexity: "",
   spaceComplexity: "",
   code: "",
-  notes: "",
+  comment: "",
 };
 
 // Each field's input id, so a failed submit can move focus to the first
 // field that needs fixing.
 const FIELD_IDS: Record<Field, string> = {
+  title: "post-title-input",
   language: "post-language",
   timeComplexity: "post-time",
   spaceComplexity: "post-space",
   code: "post-code",
-  notes: "post-notes",
+  comment: "post-comment",
 };
 
 function validate(draft: PostDraft): FieldErrors {
   const errors: FieldErrors = {};
+  if (!draft.title.trim()) errors.title = "Give your post a title.";
+  else if (draft.title.length > MAX_TITLE_LENGTH)
+    errors.title = `Titles can be at most ${MAX_TITLE_LENGTH} characters.`;
   if (!draft.language) errors.language = "Pick the language you used.";
   if (!draft.timeComplexity)
     errors.timeComplexity = "Pick the time complexity.";
@@ -47,8 +53,8 @@ function validate(draft: PostDraft): FieldErrors {
   if (!draft.code.trim()) errors.code = "Paste or write your solution.";
   else if (draft.code.length > MAX_CODE_LENGTH)
     errors.code = `Code can be at most ${MAX_CODE_LENGTH.toLocaleString()} characters.`;
-  if (draft.notes.length > MAX_NOTES_LENGTH)
-    errors.notes = `Notes can be at most ${MAX_NOTES_LENGTH.toLocaleString()} characters.`;
+  if (draft.comment.length > MAX_COMMENT_LENGTH)
+    errors.comment = `Comments can be at most ${MAX_COMMENT_LENGTH.toLocaleString()} characters.`;
   return errors;
 }
 
@@ -208,6 +214,21 @@ function PostForm({
     >
       {saveError && <ErrorMessage message={saveError} />}
 
+      <LabeledField field="title" label="Title" error={errors.title}>
+        <input
+          id={FIELD_IDS.title}
+          value={draft.title}
+          onChange={(e) => set("title", e.target.value)}
+          aria-invalid={errors.title ? true : undefined}
+          aria-describedby={
+            errors.title ? `${FIELD_IDS.title}-error` : undefined
+          }
+          disabled={saving}
+          maxLength={MAX_TITLE_LENGTH}
+          placeholder="e.g. One-pass hash map"
+        />
+      </LabeledField>
+
       <div className="post-form-selects">
         <SelectField
           field="language"
@@ -263,15 +284,19 @@ function PostForm({
         />
       </LabeledField>
 
-      <LabeledField field="notes" label="Notes (optional)" error={errors.notes}>
+      <LabeledField
+        field="comment"
+        label="Comment (optional)"
+        error={errors.comment}
+      >
         <textarea
-          id={FIELD_IDS.notes}
+          id={FIELD_IDS.comment}
           rows={4}
-          value={draft.notes}
-          onChange={(e) => set("notes", e.target.value)}
-          aria-invalid={errors.notes ? true : undefined}
+          value={draft.comment}
+          onChange={(e) => set("comment", e.target.value)}
+          aria-invalid={errors.comment ? true : undefined}
           aria-describedby={
-            errors.notes ? `${FIELD_IDS.notes}-error` : undefined
+            errors.comment ? `${FIELD_IDS.comment}-error` : undefined
           }
           disabled={saving}
           placeholder="Your approach, trade-offs, what tripped you up…"

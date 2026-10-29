@@ -21,3 +21,40 @@ export function highlight(code: string, language: string): string {
     ? Prism.highlight(code, grammar, language)
     : Prism.util.encode(code).toString();
 }
+
+// One run of text and the Prism classes it should get ("" for plain text).
+export type Segment = { text: string; className: string };
+
+type PrismToken = string | Prism.Token;
+
+// The same highlighting, split into lines, for views that number each line.
+// Works on Prism's tokens rather than its HTML, so a token that spans
+// several lines (a block comment, a docstring) is cut cleanly at each line
+// break, and React escapes the text, so no raw HTML is involved.
+export function highlightLines(code: string, language: string): Segment[][] {
+  const grammar = Prism.languages[language];
+  const tokens: PrismToken[] = grammar ? Prism.tokenize(code, grammar) : [code];
+
+  const lines: Segment[][] = [[]];
+  function add(token: PrismToken | PrismToken[], classes: string[]) {
+    if (Array.isArray(token)) {
+      for (const t of token) add(t, classes);
+    } else if (typeof token === "string") {
+      token.split("\n").forEach((text, i) => {
+        if (i > 0) lines.push([]);
+        if (text)
+          lines[lines.length - 1].push({ text, className: classes.join(" ") });
+      });
+    } else {
+      const alias = token.alias ?? [];
+      add(token.content as PrismToken | PrismToken[], [
+        ...classes,
+        "token",
+        token.type,
+        ...(Array.isArray(alias) ? alias : [alias]),
+      ]);
+    }
+  }
+  add(tokens, []);
+  return lines;
+}

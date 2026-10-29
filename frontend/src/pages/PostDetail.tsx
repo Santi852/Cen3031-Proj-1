@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import CodeBlock from "../components/CodeBlock";
 import ErrorMessage from "../components/ErrorMessage";
+import { HeartIcon } from "../components/icons";
 import Loading from "../components/Loading";
 import PostMeta from "../components/PostMeta";
 import {
@@ -11,6 +12,7 @@ import {
   LANGUAGES,
   labelFor,
   PostError,
+  setLiked,
   type Post,
 } from "../leetcode/postService";
 
@@ -76,16 +78,21 @@ export default function PostDetail() {
   return (
     <section className="post-page" aria-labelledby="post-title">
       {back}
-      <h2 id="post-title">
-        {labelFor(LANGUAGES, post.language)} solution by {post.authorName}
-      </h2>
-      <PostMeta post={post} />
+      {/* Title and byline grouped, so the title sits right above the
+          author instead of a full section gap away. */}
+      <header className="post-header">
+        <div className="post-title-row">
+          <h2 id="post-title">{post.title}</h2>
+          <LikeButton slug={slug} post={post} />
+        </div>
+        <PostMeta post={post} />
+      </header>
+      {post.comment && <p className="post-comment">{post.comment}</p>}
       <CodeBlock
         code={post.code}
         language={post.language}
         label={`${labelFor(LANGUAGES, post.language)} code`}
       />
-      {post.notes && <p className="post-notes">{post.notes}</p>}
       {isOwner && <OwnerActions slug={slug} post={post} userId={user.id} />}
     </section>
   );
@@ -162,5 +169,37 @@ function OwnerActions({
         </>
       )}
     </div>
+  );
+}
+
+// The heart fills in right away and is undone if saving fails, so tapping
+// it never feels slow.
+function LikeButton({ slug, post }: { slug: string; post: Post }) {
+  const [liked, setLikedState] = useState(post.liked);
+  const [failed, setFailed] = useState(false);
+
+  async function toggle() {
+    const next = !liked;
+    setLikedState(next);
+    setFailed(false);
+    try {
+      await setLiked(slug, post.id, next);
+    } catch {
+      setLikedState(!next);
+      setFailed(true);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      className={liked ? "like-button is-liked" : "like-button"}
+      aria-label="Like this solution"
+      aria-pressed={liked}
+      title={failed ? "Couldn't save your like. Try again." : undefined}
+      onClick={() => void toggle()}
+    >
+      <HeartIcon />
+    </button>
   );
 }

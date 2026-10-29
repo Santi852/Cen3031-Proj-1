@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import HelpSheet from "./HelpSheet";
-import { DashboardIcon, HelpIcon, ProfileIcon, TrophyIcon } from "./icons";
+import {
+  CodeIcon,
+  DashboardIcon,
+  HelpIcon,
+  ProfileIcon,
+  TrophyIcon,
+} from "./icons";
 import { useApiStatus } from "./useApiStatus";
 
 export default function Layout() {
@@ -68,19 +74,30 @@ function TabBar() {
   const { pathname } = useLocation();
   // Link Account is reached from Profile, so Profile stays highlighted there.
   const onProfile = pathname.startsWith("/link-account");
+  // Same for a single problem and its posts, under Problems.
+  const onProblem = pathname.startsWith("/problem/");
 
   const tabClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? "tab active" : "tab";
 
   return (
     <nav className="tab-bar" aria-label="Main">
-      <NavLink to="/leaderboard" className={tabClass}>
-        <TrophyIcon />
-        <span className="tab-label">Leaderboard</span>
+      <NavLink
+        to="/problems"
+        className={({ isActive }) =>
+          tabClass({ isActive: isActive || onProblem })
+        }
+      >
+        <CodeIcon />
+        <span className="tab-label">Problems</span>
       </NavLink>
       <NavLink to="/" end className={tabClass}>
         <DashboardIcon />
         <span className="tab-label">Dashboard</span>
+      </NavLink>
+      <NavLink to="/leaderboard" className={tabClass}>
+        <TrophyIcon />
+        <span className="tab-label">Leaderboard</span>
       </NavLink>
       <NavLink
         to="/profile"

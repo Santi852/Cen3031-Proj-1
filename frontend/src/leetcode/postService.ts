@@ -32,31 +32,39 @@ export const COMPLEXITIES = [
 export type Language = (typeof LANGUAGES)[number]["value"];
 export type Complexity = (typeof COMPLEXITIES)[number]["value"];
 
+export const MAX_TITLE_LENGTH = 100;
 export const MAX_CODE_LENGTH = 20_000;
-export const MAX_NOTES_LENGTH = 2_000;
+export const MAX_COMMENT_LENGTH = 2_000;
 
 export type Post = {
   id: string;
   problemSlug: string;
   authorId: string;
   authorName: string;
+  // Title and comment aren't in 1-21's description yet; ask Matias to add
+  // them (title required, comment optional).
+  title: string;
   language: Language;
   timeComplexity: Complexity;
   spaceComplexity: Complexity;
   code: string;
-  notes: string;
+  comment: string;
   createdAt: string; // ISO timestamp
   updatedAt: string | null; // null until the first edit
+  // Whether you liked it. Likes are new (not in 1-21): the API needs to
+  // store one like per user per post and send this back for the viewer.
+  liked: boolean;
 };
 
 // What the editor sends. Empty strings mean "not picked yet"; the editor
 // checks them before sending, and the server checks again (1-24 tests that).
 export type PostDraft = {
+  title: string;
   language: Language | "";
   timeComplexity: Complexity | "";
   spaceComplexity: Complexity | "";
   code: string;
-  notes: string;
+  comment: string;
 };
 
 export type PostErrorKind =
@@ -90,6 +98,7 @@ let posts: Post[] = [
     problemSlug: "two-sum",
     authorId: "demo-1",
     authorName: "two-sum-enjoyer",
+    title: "One-pass hash map",
     language: "python",
     timeComplexity: "O(n)",
     spaceComplexity: "O(n)",
@@ -101,16 +110,18 @@ let posts: Post[] = [
                 return [seen[target - num], i]
             seen[num] = i
         return []`,
-    notes:
+    comment:
       "One pass with a hash map. For each number, check whether its complement was already seen.",
     createdAt: hoursAgo(5),
     updatedAt: null,
+    liked: false,
   },
   {
     id: "sample-2",
     problemSlug: "two-sum",
     authorId: "demo-2",
     authorName: "binary_searcher",
+    title: "Brute force, but correct",
     language: "java",
     timeComplexity: "O(n^2)",
     spaceComplexity: "O(1)",
@@ -126,10 +137,11 @@ let posts: Post[] = [
         return new int[0];
     }
 }`,
-    notes:
+    comment:
       "Brute force first, to have something correct. No extra memory, but it's quadratic.",
     createdAt: hoursAgo(30),
     updatedAt: null,
+    liked: false,
   },
 ];
 
@@ -161,25 +173,34 @@ function checkDraft(
   draft: PostDraft,
 ): Omit<
   Post,
-  "id" | "problemSlug" | "authorId" | "authorName" | "createdAt" | "updatedAt"
+  | "id"
+  | "problemSlug"
+  | "authorId"
+  | "authorName"
+  | "createdAt"
+  | "updatedAt"
+  | "liked"
 > {
   const { language, timeComplexity, spaceComplexity } = draft;
   if (
+    !draft.title.trim() ||
+    draft.title.length > MAX_TITLE_LENGTH ||
     !language ||
     !timeComplexity ||
     !spaceComplexity ||
     !draft.code.trim() ||
     draft.code.length > MAX_CODE_LENGTH ||
-    draft.notes.length > MAX_NOTES_LENGTH
+    draft.comment.length > MAX_COMMENT_LENGTH
   ) {
     throw new PostError("invalid", "Some fields are missing or too long.");
   }
   return {
+    title: draft.title.trim(),
     language,
     timeComplexity,
     spaceComplexity,
     code: draft.code,
-    notes: draft.notes.trim(),
+    comment: draft.comment.trim(),
   };
 }
 
@@ -215,6 +236,7 @@ export async function createPost(
     authorName: getLinkedUsername() ?? author.email.split("@")[0],
     createdAt: new Date().toISOString(),
     updatedAt: null,
+    liked: false,
   };
   posts = [...posts, post];
   return post;
@@ -248,4 +270,15 @@ export async function deletePost(
   requireUnlocked(slug);
   requireOwner(findPost(slug, id), userId);
   posts = posts.filter((p) => p.id !== id);
+}
+
+export async function setLiked(
+  slug: string,
+  id: string,
+  liked: boolean,
+): Promise<void> {
+  await wait(200);
+  requireUnlocked(slug);
+  findPost(slug, id);
+  posts = posts.map((p) => (p.id === id ? { ...p, liked } : p));
 }
