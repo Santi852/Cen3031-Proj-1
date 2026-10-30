@@ -80,6 +80,7 @@ beforeAll(async () => {
     schema,
     migrationsSchema: schema,
     migrationsTable: "pgmigrations",
+    advisoryLockMode: "wait",
     log: () => undefined,
   });
   server = createApp({
