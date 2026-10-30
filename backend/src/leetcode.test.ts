@@ -109,3 +109,43 @@ it("validates all three enum fields and preserves code whitespace", () => {
   for (const field of ["language", "timeComplexity", "spaceComplexity"])
     expect(() => parsePost({ ...draft, [field]: "invalid" })).toThrow();
 });
+
+it("normalizes provider HTTP errors, GraphQL errors and malformed counts", async () => {
+  for (const response of [
+    new Response("blocked", { status: 403 }),
+    new Response("slow down", { status: 429 }),
+    new Response("down", { status: 503 }),
+    new Response("not JSON"),
+    new Response(JSON.stringify({ errors: [{ message: "schema changed" }] })),
+    new Response(
+      JSON.stringify({
+        data: {
+          matchedUser: {
+            username: "x",
+            submitStatsGlobal: {
+              acSubmissionNum: [{ difficulty: "Easy", count: -1 }],
+            },
+          },
+        },
+      }),
+    ),
+  ]) {
+    await expect(
+      createLeetCodeConnector(async () => response).profile("x"),
+    ).rejects.toMatchObject({ status: 503, kind: "unavailable" });
+  }
+});
+
+it("aborts a hung provider request at the real request deadline", async () => {
+  const request: typeof fetch = async (_url, init) =>
+    new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener(
+        "abort",
+        () => reject(new Error("aborted")),
+        { once: true },
+      );
+    });
+  await expect(
+    createLeetCodeConnector(request).profile("x"),
+  ).rejects.toMatchObject({ kind: "unavailable" });
+}, 12000);

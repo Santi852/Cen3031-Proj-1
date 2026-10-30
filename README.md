@@ -20,7 +20,7 @@ Task tracking and progress live on the [StackSprint project board](https://githu
 
 ## Status
 
-The TypeScript scaffold includes a React/Vite frontend, an Express API, shared lint/format settings, and automated checks. PostgreSQL migrations and the sign-up/sign-in API are available. The frontend sign-in/sign-up flow still uses a development-only browser storage stub and needs to be connected to the API separately.
+The React/Vite frontend is connected to the Express authentication and Release 1 APIs. PostgreSQL stores accounts, linked profiles, solves, weekly scores and solution posts. Explicit demo fixtures, timezone settings and browser acceptance tests are documented in the [Release 1 demo guide](docs/RELEASE1_DEMO.md). The [catch-up checklist](docs/HUSSAIN_RELEASE1_CLOSEOUT.md) maps Hussain’s assigned items to evidence and remaining human steps.
 
 ## Local Setup
 
@@ -49,7 +49,7 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
-The API runs at http://localhost:3001 and the frontend at http://localhost:5173. Keep the API on port `3001` for the current frontend health check and browser test. A signed-out visit redirects to sign-in; the footer should show `API: ok`.
+The API runs at http://localhost:3001 and the frontend at http://localhost:5173. The development frontend proxies API requests to port `3001`. A signed-out visit redirects to sign-in; the footer should show `API: ok`.
 
 The [backend guide](backend/README.md) documents the authentication API, migrations, and database tests. The health endpoint does not query PostgreSQL, but authentication requires a running database.
 
@@ -57,18 +57,18 @@ The [backend guide](backend/README.md) documents the authentication API, migrati
 
 Run these commands from the repository root:
 
-| Command                | What it runs                                                                |
-| ---------------------- | --------------------------------------------------------------------------- |
-| `npm run check`        | Lint, formatting check, type checks, both builds, and backend tests         |
-| `npm run lint`         | Shared ESLint rules across the backend and frontend                         |
-| `npm run format:check` | Shared Prettier formatting check                                            |
-| `npm run typecheck`    | Backend and frontend TypeScript checks                                      |
-| `npm run build`        | Backend JavaScript in `backend/dist` and frontend assets in `frontend/dist` |
-| `npm test`             | Vitest API tests                                                            |
-| `npm run test:db`      | Database and authentication integration tests using `TEST_DATABASE_URL`     |
-| `npm run test:e2e`     | Playwright smoke test; starts both development servers automatically        |
+| Command                | What it runs                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| `npm run check`        | Lint, formatting check, type checks, both builds, and backend tests          |
+| `npm run lint`         | Shared ESLint rules across the backend and frontend                          |
+| `npm run format:check` | Shared Prettier formatting check                                             |
+| `npm run typecheck`    | Backend and frontend TypeScript checks                                       |
+| `npm run build`        | Backend JavaScript in `backend/dist` and frontend assets in `frontend/dist`  |
+| `npm test`             | Vitest API tests                                                             |
+| `npm run test:db`      | Database and authentication integration tests using `TEST_DATABASE_URL`      |
+| `npm run test:e2e`     | Playwright acceptance tests; use a separate `E2E_DATABASE_URL` ending `_e2e` |
 
-Before the first browser test, complete backend setup and run `npx playwright install chromium` from `frontend/`. Then return to the repository root and run `npm run test:e2e`. Browser tests are separate from `npm run check`; the current browser smoke test covers the existing UI shell, while database-backed authentication is exercised by `npm run test:db`.
+Before browser tests, complete setup, create a disposable database ending `_e2e`, export its URL as `E2E_DATABASE_URL`, and run `npx playwright install chromium` from `frontend/`. Then run `npm run test:e2e` from the root. The [demo guide](docs/RELEASE1_DEMO.md) gives exact commands. Playwright uses separate ports 3002/5174, real authentication/database calls and explicit demo fixtures. It never reuses your development servers. Browser tests are separate from `npm run check`.
 
 After `npm run build`, run the compiled API with `npm start --prefix backend`. GitHub Actions (`.github/workflows/ci.yml`) validates the scaffold on pull requests and pushes to `main`.
 

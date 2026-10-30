@@ -12,6 +12,7 @@ describe("server configuration", () => {
       databaseUrl: valid.DATABASE_URL,
       jwtSecret: valid.JWT_SECRET,
       port: 3001,
+      leetcodeMode: "live",
       frontendOrigin: "http://localhost:5173",
     });
   });
@@ -59,4 +60,29 @@ describe("server configuration", () => {
       frontendOrigin: "https://app.example.com",
     });
   });
+});
+
+it("requires explicit isolated demo configuration and rejects production fixtures", () => {
+  expect(readConfig(valid)).toMatchObject({ leetcodeMode: "live" });
+  expect(() => readConfig({ ...valid, LEETCODE_MODE: "surprise" })).toThrow(
+    "LEETCODE_MODE",
+  );
+  expect(() => readConfig({ ...valid, LEETCODE_MODE: "demo" })).toThrow(
+    "_demo",
+  );
+  expect(() =>
+    readConfig({
+      ...valid,
+      LEETCODE_MODE: "demo",
+      DATABASE_URL: "postgres://localhost/stacksprint_demo",
+      NODE_ENV: "production",
+    }),
+  ).toThrow("production");
+  expect(
+    readConfig({
+      ...valid,
+      LEETCODE_MODE: "demo",
+      DATABASE_URL: "postgres://localhost/stacksprint_demo",
+    }),
+  ).toMatchObject({ leetcodeMode: "demo" });
 });

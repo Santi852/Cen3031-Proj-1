@@ -1,3 +1,4 @@
+import { createSettingsRouter } from "./settings.js";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import { createAuthRouter, type AuthOptions } from "./auth/routes.js";
@@ -10,6 +11,11 @@ export function createApp(
 ) {
   const app = express();
   app.disable("x-powered-by");
+  const dataSource = options.dataSource ?? "leetcode";
+  app.use("/api", (_req, res, next) => {
+    res.set("X-Data-Source", dataSource);
+    next();
+  });
   const frontendOrigin = options.frontendOrigin ?? "http://localhost:5173";
   app.use(
     cors({
@@ -18,9 +24,15 @@ export function createApp(
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
   );
-  app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+  app.get("/api/health", (_req, res) =>
+    res.json({
+      status: "ok",
+      ...(dataSource === "demo" ? { dataSource: "demo" } : {}),
+    }),
+  );
   app.use("/api/auth", createAuthRouter(options));
   app.use("/api", createSprintRouter(options));
+  app.use("/api/settings", createSettingsRouter(options));
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found." });
   });

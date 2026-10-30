@@ -345,3 +345,176 @@ it("rejects missing or invalid enum tags and oversized/empty code", async () => 
     ).toBe(400);
   expect((await db.query("SELECT * FROM posts")).rowCount).toBe(0);
 });
+
+it("labels demo API output and keeps demo solves, scores and unlocks out of live views", async () => {
+  const demo = createApp({
+    database: db,
+    jwtSecret: secret,
+    connector: { profile, recent },
+    now: () => now,
+    dataSource: "demo",
+  }).listen(0, "127.0.0.1");
+  await new Promise<void>((resolve) => demo.once("listening", resolve));
+  const demoBase = `http://127.0.0.1:${(demo.address() as AddressInfo).port}`;
+  try {
+    const health = await fetch(demoBase + "/api/health");
+    expect(health.headers.get("x-data-source")).toBe("demo");
+    expect(await health.json()).toMatchObject({ dataSource: "demo" });
+    await link();
+    recent.mockResolvedValue([
+      solve(),
+      solve("medium", "medium"),
+      solve("hard", "hard"),
+    ]);
+    const synced = await fetch(demoBase + "/api/leetcode/sync", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${owner}` },
+    });
+    expect(synced.status).toBe(200);
+    expect(
+      (await db.query("SELECT DISTINCT source FROM submissions")).rows,
+    ).toEqual([{ source: "demo" }]);
+    const headers = { Authorization: `Bearer ${owner}` };
+    const board = (await (
+      await fetch(demoBase + "/api/leaderboard", { headers })
+    ).json()) as { you: { points: number } };
+    expect(board.you.points).toBe(9);
+    expect(
+      (
+        (await (
+          await fetch(demoBase + "/api/problems/two-sum/discussion", {
+            headers,
+          })
+        ).json()) as { unlocked: boolean }
+      ).unlocked,
+    ).toBe(true);
+    expect(
+      (await (await call("/problems/two-sum/discussion")).json()).unlocked,
+    ).toBe(false);
+    expect((await (await call("/leaderboard")).json()).top[0]?.points).toBe(0);
+    expect((await (await call("/dashboard")).json()).leetcode.counts).toEqual({
+      easy: 0,
+      medium: 0,
+      hard: 0,
+    });
+  } finally {
+    await new Promise<void>((resolve) => {
+      demo.close(() => resolve());
+      demo.closeAllConnections();
+    });
+  }
+});
+
+it("persists validated timezones per authenticated user", async () => {
+  expect(
+    (await call("/settings/timezone", "GET", undefined, "bad")).status,
+  ).toBe(401);
+  expect(await (await call("/settings/timezone")).json()).toEqual({
+    timeZone: "UTC",
+  });
+  expect(
+    (await call("/settings/timezone", "PUT", { timeZone: "America/New_York" }))
+      .status,
+  ).toBe(200);
+  expect(await (await call("/settings/timezone")).json()).toEqual({
+    timeZone: "America/New_York",
+  });
+  expect(
+    await (await call("/settings/timezone", "GET", undefined, other)).json(),
+  ).toEqual({ timeZone: "UTC" });
+  for (const timeZone of ["", "Mars/Olympus", "GMT+5", 5, null]) {
+    expect((await call("/settings/timezone", "PUT", { timeZone })).status).toBe(
+      400,
+    );
+  }
+  expect(await (await call("/settings/timezone")).json()).toEqual({
+    timeZone: "America/New_York",
+  });
+  expect(
+    (await db.query("SELECT time_zone FROM users WHERE id=$1", [ownerId])).rows,
+  ).toEqual([{ time_zone: "America/New_York" }]);
+});
+
+it("awards 1/3/5 points, never rescores a prior-week repeat, and shares equal-time ranks", async () => {
+  await link();
+  await link(other, "other");
+  recent.mockResolvedValue([
+    solve("two-sum", "easy"),
+    solve("medium", "medium"),
+    solve("hard", "hard"),
+    solve("old", "hard", "2026-10-25T23:59:59Z"),
+  ]);
+  expect((await call("/leetcode/sync", "POST")).status).toBe(200);
+  expect((await call("/leetcode/sync", "POST", undefined, other)).status).toBe(
+    200,
+  );
+  let board = await (await call("/leaderboard")).json();
+  expect(board.top.map((row) => [row.points, row.rank])).toEqual([
+    [9, 1],
+    [9, 1],
+  ]);
+  now = new Date("2026-10-29T12:15:00Z");
+  recent.mockResolvedValue([
+    solve("old", "hard", "2026-10-29T12:10:00Z"),
+    solve("two-sum", "easy", "2026-10-29T12:10:00Z"),
+  ]);
+  expect((await call("/leetcode/sync", "POST")).status).toBe(200);
+  board = await (await call("/leaderboard")).json();
+  expect(board.top.map((row) => [row.points, row.rank])).toEqual([
+    [9, 1],
+    [9, 1],
+  ]);
+  expect(
+    (
+      await db.query(
+        "SELECT count(*)::int AS count FROM submissions WHERE user_id=$1",
+        [ownerId],
+      )
+    ).rows,
+  ).toEqual([{ count: 4 }]);
+});
+
+it("never lets a fixture sync replace an existing live solve's earliest evidence", async () => {
+  await link();
+  recent.mockResolvedValue([solve("two-sum", "easy", "2026-10-25T12:00:00Z")]);
+  expect((await call("/leetcode/sync", "POST")).status).toBe(200);
+  now = new Date("2026-10-29T12:15:00Z");
+  const before = (
+    await db.query("SELECT * FROM submissions WHERE user_id=$1", [ownerId])
+  ).rows;
+  recent.mockResolvedValue([solve("two-sum", "easy", "2026-10-29T12:10:00Z")]);
+  const demo = createApp({
+    database: db,
+    jwtSecret: secret,
+    connector: { profile, recent },
+    now: () => now,
+    dataSource: "demo",
+  }).listen(0, "127.0.0.1");
+  await new Promise<void>((resolve) => demo.once("listening", resolve));
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:${(demo.address() as AddressInfo).port}/api/leetcode/sync`,
+      { method: "POST", headers: { Authorization: `Bearer ${owner}` } },
+    );
+    expect(response.status).toBe(409);
+    expect(
+      (await db.query("SELECT * FROM submissions WHERE user_id=$1", [ownerId]))
+        .rows,
+    ).toEqual(before);
+    expect((await call("/leetcode/sync", "POST")).status).toBe(200);
+    expect(
+      (
+        await db.query(
+          "SELECT first_solved_at FROM submissions WHERE user_id=$1",
+          [ownerId],
+        )
+      ).rows[0].first_solved_at.toISOString(),
+    ).toBe("2026-10-25T12:00:00.000Z");
+    expect((await (await call("/leaderboard")).json()).top[0]?.points).toBe(0);
+  } finally {
+    await new Promise<void>((resolve) => {
+      demo.close(() => resolve());
+      demo.closeAllConnections();
+    });
+  }
+});

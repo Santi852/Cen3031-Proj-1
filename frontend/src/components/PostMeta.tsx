@@ -1,3 +1,5 @@
+import { useTimeZone } from "../settings/TimeZoneContext";
+import { formatLocalDateTime } from "../settings/dates";
 import {
   COMPLEXITIES,
   LANGUAGES,
@@ -5,21 +7,22 @@ import {
   type Post,
 } from "../leetcode/postService";
 
-const dateFormat = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
 // Author, date, language and the two Big-O tags, shared by the post list and
 // the post page.
 export default function PostMeta({ post }: { post: Post }) {
+  const { timeZone } = useTimeZone();
   return (
     <div className="post-meta">
       <p className="post-byline">
         <span className="post-author">{post.authorName}</span>
-        <time dateTime={post.createdAt}>
-          {dateFormat.format(new Date(post.createdAt))}
+        <time
+          dateTime={post.createdAt}
+          title={formatLocalDateTime(post.createdAt, timeZone)}
+        >
+          {new Intl.DateTimeFormat(undefined, {
+            timeZone,
+            dateStyle: "medium",
+          }).format(new Date(post.createdAt))}
         </time>
         {post.updatedAt && <span>(edited)</span>}
       </p>

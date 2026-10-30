@@ -1,3 +1,4 @@
+import TimeZoneSettings from "../settings/TimeZoneSettings";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
@@ -5,7 +6,7 @@ import { useApiStatus } from "../components/useApiStatus";
 import { getLinkedAccount } from "../leetcode/linkService";
 
 // Account details, linked services and sign out. Later the natural home for
-// settings such as weekly goals and the timezone setting (1-11).
+// settings such as weekly goals. Timezone preferences are persisted per user.
 export default function Profile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -67,6 +68,8 @@ export default function Profile() {
           )}
         </div>
       </section>
+
+      <TimeZoneSettings />
 
       <button
         type="button"

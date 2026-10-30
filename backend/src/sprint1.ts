@@ -1,4 +1,5 @@
 import express from "express";
+import { createDemoConnector } from "./demoConnector.js";
 import { rateLimit } from "express-rate-limit";
 import type { Pool, PoolClient } from "pg";
 import { requireAuth } from "./auth/middleware.js";
@@ -18,13 +19,19 @@ export type SprintOptions = {
   database: Pick<Pool, "query" | "connect">;
   jwtSecret: string;
   connector?: LeetCodeConnector;
+  dataSource?: "leetcode" | "demo";
   now?: () => Date;
 };
 export function createSprintRouter(options: SprintOptions) {
   const router = express.Router();
   const db = options.database;
-  const connector = options.connector ?? createLeetCodeConnector();
   const clock = options.now ?? (() => new Date());
+  const source = options.dataSource ?? "leetcode";
+  const connector =
+    options.connector ??
+    (source === "demo"
+      ? createDemoConnector(clock)
+      : createLeetCodeConnector());
   router.use((req, res, next) => {
     if (!/^\/(leetcode|dashboard|leaderboard|problems)(\/|$)/.test(req.path)) {
       next("router");
@@ -161,6 +168,18 @@ export function createSprintRouter(options: SprintOptions) {
           "Wait before syncing again.",
           remaining,
         );
+      if (source === "demo") {
+        const live = await client.query(
+          "SELECT 1 FROM submissions WHERE user_id=$1 AND source='leetcode' LIMIT 1",
+          [user],
+        );
+        if (live.rowCount)
+          throw new ApiError(
+            409,
+            "source_conflict",
+            "This account has live solve history. Use a separate demo account and database.",
+          );
+      }
       const solves = await connector.recent(account.username);
       // Sort to avoid deadlocks when different users import the same problems.
       for (const solve of [...solves].sort((a, b) =>
@@ -176,14 +195,14 @@ export function createSprintRouter(options: SprintOptions) {
         ).rows[0];
         await client.query(
           `INSERT INTO submissions(user_id,problem_id,first_solved_at,verified_at,source,source_submission_id)
-          VALUES($1,$2,$3,$4,'leetcode',$5) ON CONFLICT(user_id,problem_id) DO UPDATE SET
-          first_solved_at=CASE WHEN submissions.source='demo' THEN EXCLUDED.first_solved_at ELSE LEAST(submissions.first_solved_at,EXCLUDED.first_solved_at) END,
-          verified_at=EXCLUDED.verified_at,source='leetcode',source_submission_id=EXCLUDED.source_submission_id`,
-          [user, problem.id, solve.solvedAt, now, solve.submissionId],
+          VALUES($1,$2,$3,$4,$6,$5) ON CONFLICT(user_id,problem_id) DO UPDATE SET
+          first_solved_at=CASE WHEN submissions.source<>EXCLUDED.source THEN EXCLUDED.first_solved_at ELSE LEAST(submissions.first_solved_at,EXCLUDED.first_solved_at) END,
+          verified_at=EXCLUDED.verified_at,source=EXCLUDED.source,source_submission_id=EXCLUDED.source_submission_id`,
+          [user, problem.id, solve.solvedAt, now, solve.submissionId, source],
         );
         await client.query(
-          "INSERT INTO discussion_unlocks(user_id,problem_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-          [user, problem.id],
+          "INSERT INTO discussion_unlocks(user_id,problem_id,data_source) VALUES($1,$2,$3) ON CONFLICT DO NOTHING",
+          [user, problem.id, source],
         );
       }
       const start = weekStart(now);
@@ -191,19 +210,20 @@ export function createSprintRouter(options: SprintOptions) {
         await client.query(
           `SELECT COALESCE(sum(CASE p.difficulty WHEN 'easy' THEN 1 WHEN 'medium' THEN 3 ELSE 5 END),0)::integer AS points,
         max(s.first_solved_at) AS reached FROM submissions s JOIN problems p ON p.id=s.problem_id
-        WHERE s.user_id=$1 AND s.source='leetcode' AND s.first_solved_at >= $2 AND s.first_solved_at <= $3`,
-          [user, start, now],
+        WHERE s.user_id=$1 AND s.source=$4 AND s.first_solved_at >= $2 AND s.first_solved_at <= $3`,
+          [user, start, now, source],
         )
       ).rows[0];
       await client.query(
-        `INSERT INTO weekly_scores(user_id,week_start,points,score_reached_at,updated_at) VALUES($1,$2,$3,$4,$5)
-        ON CONFLICT(user_id,week_start) DO UPDATE SET points=EXCLUDED.points,score_reached_at=EXCLUDED.score_reached_at,updated_at=EXCLUDED.updated_at`,
+        `INSERT INTO weekly_scores(user_id,week_start,points,score_reached_at,updated_at,data_source) VALUES($1,$2,$3,$4,$5,$6)
+        ON CONFLICT(user_id,week_start,data_source) DO UPDATE SET points=EXCLUDED.points,score_reached_at=EXCLUDED.score_reached_at,updated_at=EXCLUDED.updated_at`,
         [
           user,
           start.toISOString().slice(0, 10),
           score.points,
           score.reached,
           now,
+          source,
         ],
       );
       await client.query(
@@ -214,6 +234,7 @@ export function createSprintRouter(options: SprintOptions) {
         lastSyncedAt: now.toISOString(),
         minutesRemaining: 15,
         imported: solves.length,
+        dataSource: source,
       };
     });
     res.json(result);
@@ -241,8 +262,8 @@ export function createSprintRouter(options: SprintOptions) {
     const counts = { easy: 0, medium: 0, hard: 0 };
     const rows = await db.query(
       `SELECT p.difficulty,count(*)::integer AS count FROM submissions s JOIN problems p ON p.id=s.problem_id
-      WHERE user_id=$1 AND source='leetcode' AND first_solved_at >= $2 AND first_solved_at <= $3 GROUP BY p.difficulty`,
-      [user, start, now],
+      WHERE user_id=$1 AND source=$4 AND first_solved_at >= $2 AND first_solved_at <= $3 GROUP BY p.difficulty`,
+      [user, start, now, source],
     );
     for (const row of rows.rows)
       counts[row.difficulty as keyof typeof counts] = row.count;
@@ -263,9 +284,9 @@ export function createSprintRouter(options: SprintOptions) {
         `WITH ranked AS (
       SELECT a.user_id AS "userId",a.username,COALESCE(s.points,0) AS points,
       rank() OVER(ORDER BY COALESCE(s.points,0) DESC,s.score_reached_at ASC NULLS LAST)::integer AS rank
-      FROM leetcode_accounts a LEFT JOIN weekly_scores s ON s.user_id=a.user_id AND s.week_start=$1)
+      FROM leetcode_accounts a LEFT JOIN weekly_scores s ON s.user_id=a.user_id AND s.week_start=$1 AND s.data_source=$2)
       SELECT * FROM ranked ORDER BY rank,username,"userId"`,
-        [weekStart(clock()).toISOString().slice(0, 10)],
+        [weekStart(clock()).toISOString().slice(0, 10), source],
       )
     ).rows;
     res.json({
@@ -279,8 +300,8 @@ export function createSprintRouter(options: SprintOptions) {
       throw new ApiError(404, "not_found", "Problem not found.");
     const row = (
       await db.query(
-        `SELECT p.id,p.slug,p.title,p.difficulty,EXISTS(SELECT 1 FROM discussion_unlocks u WHERE u.problem_id=p.id AND u.user_id=$2) AS unlocked FROM problems p WHERE p.slug=$1`,
-        [slug, user],
+        `SELECT p.id,p.slug,p.title,p.difficulty,EXISTS(SELECT 1 FROM discussion_unlocks u WHERE u.problem_id=p.id AND u.user_id=$2 AND u.data_source=$3) AS unlocked FROM problems p WHERE p.slug=$1`,
+        [slug, user, source],
       )
     ).rows[0];
     if (!row) throw new ApiError(404, "not_found", "Problem not found.");

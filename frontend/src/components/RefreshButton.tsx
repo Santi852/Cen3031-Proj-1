@@ -1,3 +1,5 @@
+import { useTimeZone } from "../settings/TimeZoneContext";
+import { formatLocalDateTime } from "../settings/dates";
 import ErrorMessage from "./ErrorMessage";
 import type { SyncState } from "../leetcode/useSync";
 
@@ -65,6 +67,7 @@ export function RefreshButton({ sync }: { sync: SyncState }) {
 // "Last synced 4 hours ago", plus the cooldown countdown (1-09 requires it to
 // be visible, and the icon can't show it) and any sync error.
 export function SyncStatus({ sync }: { sync: SyncState }) {
+  const { timeZone } = useTimeZone();
   return (
     <div className="sync-panel">
       {/* Not aria-live: a countdown announced every second would be noise. */}
@@ -74,7 +77,7 @@ export function SyncStatus({ sync }: { sync: SyncState }) {
             Last synced{" "}
             <time
               dateTime={sync.lastSyncedAt}
-              title={new Date(sync.lastSyncedAt).toLocaleString()}
+              title={formatLocalDateTime(sync.lastSyncedAt, timeZone)}
             >
               {formatAgo(sync.lastSyncedAt, sync.now)}
             </time>

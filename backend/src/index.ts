@@ -15,6 +15,7 @@ const app = createApp({
   database,
   jwtSecret: config.jwtSecret,
   frontendOrigin: config.frontendOrigin,
+  dataSource: config.leetcodeMode === "demo" ? "demo" : "leetcode",
 });
 const server = app.listen(config.port, () =>
   console.log(`API on http://localhost:${config.port}`),

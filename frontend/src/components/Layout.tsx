@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import HelpSheet from "./HelpSheet";
+import DemoBanner from "./DemoBanner";
+import TimeZoneProvider from "../settings/TimeZoneProvider";
 import {
   CodeIcon,
   DashboardIcon,
@@ -20,9 +22,12 @@ export default function Layout() {
         <TopBar />
         {user && <TabBar />}
       </header>
-      <main>
-        <Outlet />
-      </main>
+      <DemoBanner />
+      <TimeZoneProvider key={user?.id ?? "signed-out"} enabled={Boolean(user)}>
+        <main>
+          <Outlet />
+        </main>
+      </TimeZoneProvider>
       {/* Signed-out pages only. Hussain's Playwright smoke test loads "/",
           lands on /signin and checks for "API: ok", so it has to live here.
           Signed-in users see the API status on their Profile page. */}

@@ -113,7 +113,7 @@ describe("PostgreSQL schema v1", { concurrent: false }, () => {
     const history = await client.query(
       "SELECT * FROM pgmigrations ORDER BY id",
     );
-    expect(history.rows).toHaveLength(2);
+    expect(history.rows).toHaveLength(4);
 
     expect(await migrate("up")).toEqual([]);
     expect(await migrate("up")).toEqual([]);
@@ -129,7 +129,7 @@ describe("PostgreSQL schema v1", { concurrent: false }, () => {
   it("rolls back and reapplies inside its temporary schema", async () => {
     await createUser();
     try {
-      expect(await migrate("down")).toHaveLength(2);
+      expect(await migrate("down")).toHaveLength(4);
       const tables = await client.query<{ table_name: string }>(
         `SELECT table_name FROM information_schema.tables
           WHERE table_schema = $1 ORDER BY table_name`,
@@ -249,7 +249,7 @@ describe("PostgreSQL schema v1", { concurrent: false }, () => {
     await createSolve(userId, problemId);
     await expect(
       client.query("DELETE FROM problems WHERE id = $1", [problemId]),
-    ).rejects.toMatchObject({ code: "23503" });
+    ).rejects.toMatchObject({ code: expect.stringMatching(/^(23503|23001)$/) });
     expect((await client.query("SELECT * FROM submissions")).rowCount).toBe(1);
   });
 

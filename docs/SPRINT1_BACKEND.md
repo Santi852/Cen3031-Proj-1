@@ -4,7 +4,7 @@ Sprint 0 uses F-prefixed issue IDs. Sprint 1 uses 1-prefixed IDs. The previous f
 
 ## Scope
 
-Implements 1-04 (#26), 1-07 (#29), 1-08 (#30), 1-12 (#34), 1-16 (#38), 1-18 (#40), and 1-21 (#43). These issues remain open until teammate review and merge. The frontend integration and Hussain's connector/scoring tasks remain separately owned.
+Implements 1-04 (#26), 1-07 (#29), 1-08 (#30), 1-12 (#34), 1-16 (#38), 1-18 (#40), and 1-21 (#43). These backend changes merged in PR #87. The frontend now calls these APIs. Hussain’s catch-up coverage and the remaining observed-history limitation are recorded in [the checklist](HUSSAIN_RELEASE1_CLOSEOUT.md).
 
 Use the existing Node 22 / PostgreSQL 17 setup, then run `npm run db:migrate`. This adds profile counts, permanent discussion unlocks, post title/comment fields, and language/complexity checks. No existing tables or records are dropped. Historical posts are preserved; enum checks apply to new writes. The down migration removes the new fields and unlocks, so use it only in disposable test databases.
 
@@ -37,7 +37,7 @@ Sync holds a per-user database row lock and uses one transaction for all importe
 
 Accepted solves deduplicate on (user, problem) and preserve the earliest known timestamp. Scores recompute after successful sync using 1/3/5 points for easy/medium/hard, only live-source first-known solves within the current Monday-based UTC week. A later repeat of a known solve adds no points. Equal positive scores sort by the earliest timestamp at which that score was reached; equal timestamps share rank. Zero scores share rank. The leaderboard joins only the active week, so the new week starts at zero without a scheduled reset.
 
-The dashboard counts stored live-source first-known solves in the UTC week or rolling 30 days. Demo-source rows do not count or grant live unlocks. A successfully verified solve creates a permanent unlock; subsequent syncs never remove it.
+The dashboard counts stored live-source first-known solves in the UTC week or rolling 30 days. Demo-source rows do not count or grant live unlocks. Explicit demo mode displays and scores its own fixture source, separately from live data. A successfully verified solve creates a permanent unlock; subsequent syncs never remove it.
 
 ## Connector boundary and limitations
 
@@ -45,7 +45,7 @@ The dashboard counts stored live-source first-known solves in the UTC week or ro
 
 Public profile lookup confirms that a profile exists, not that the signed-in person owns it. Linking is therefore a public-username association, not verified ownership. The public recent feed is incomplete: it cannot prove first lifetime solves or recover every historical solve. Scores currently mean earliest solves observed by StackSprint; an unseen older solve can cause an apparent first solve to be counted until older evidence is imported. This limitation must be resolved with a fuller trusted history source before claiming lifetime-repeat-proof rankings. Empty/truncated provider feeds do not delete existing data.
 
-The live adapter's network behavior is tested with mocked provider responses. A live LeetCode smoke test is still required where outbound access is available; provider schema changes or blocking return an unavailable error. The frontend branches still use stubs until wired to these endpoints. Their existing TypeScript data shapes are the reference contract, with no server support yet for favorites, likes, month/all-time leaderboards.
+The live adapter's network behavior is tested with mocked provider responses. A bounded live profile/recent-list check passed on October 30; see [research evidence](LEETCODE_RESEARCH.md). Provider schema changes or blocking return an unavailable error. Frontend services now call these endpoints. Favorites, likes and month/all-time leaderboards remain outside Release 1. See [the demo guide](RELEASE1_DEMO.md) for explicit fixture mode and separate-database setup.
 
 ## Validation
 

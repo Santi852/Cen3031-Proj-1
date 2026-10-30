@@ -28,5 +28,17 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env) {
       "FRONTEND_ORIGIN must be a full HTTP or HTTPS origin without a path.",
     );
   }
-  return { databaseUrl, jwtSecret, port, frontendOrigin };
+  const leetcodeMode = environment.LEETCODE_MODE ?? "live";
+  if (leetcodeMode !== "live" && leetcodeMode !== "demo")
+    throw new Error("LEETCODE_MODE must be live or demo.");
+  if (leetcodeMode === "demo") {
+    if (environment.NODE_ENV === "production")
+      throw new Error("Demo mode is disabled in production.");
+    const databaseName = new URL(databaseUrl).pathname;
+    if (!/(?:_demo|_e2e)$/.test(databaseName))
+      throw new Error(
+        "Demo mode requires a separate database ending _demo or _e2e.",
+      );
+  }
+  return { databaseUrl, jwtSecret, port, frontendOrigin, leetcodeMode };
 }
