@@ -1,6 +1,6 @@
-# Sprint 1 foundation closeout - Matias Camaran
+# Sprint 0 foundation closeout - Matias Camaran
 
-Verified October 29, 2026 (America/New_York), against main commit `8d630daab97043b6fb10ceb19545478d30552ea5`. This record covers Matias's foundation work from the Sprint 1 presentation.
+Verified October 29, 2026 (America/New_York), against main commit `8d630daab97043b6fb10ceb19545478d30552ea5`. Correction: F-prefixed issues belong to Sprint 0. The prior version mislabeled them as Sprint 1. This record covers only foundation work; 1-prefixed tasks belong to Sprint 1.
 
 ## Completed work
 
@@ -49,7 +49,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
 const base = 'http://localhost:3001';
-const email = `sprint1-demo-${randomUUID()}@example.com`;
+const email = `sprint0-demo-${randomUUID()}@example.com`;
 const password = `Demo-${randomUUID()}`;
 async function post(path, body) {
   return fetch(`${base}${path}`, {
