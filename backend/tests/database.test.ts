@@ -30,10 +30,12 @@ function migrate(direction: "up" | "down") {
     dbClient: client,
     dir: migrationsDirectory,
     direction,
+    ...(direction === "down" ? { count: Infinity } : {}),
     schema,
     migrationsSchema: schema,
     migrationsTable: "pgmigrations",
     singleTransaction: true,
+    advisoryLockMode: "wait",
     log: () => undefined,
   });
 }
@@ -88,6 +90,7 @@ describe("PostgreSQL schema v1", { concurrent: false }, () => {
   beforeEach(async () => {
     await client.query("SET TIME ZONE 'UTC'");
     await client.query(`TRUNCATE
+      "${schema}".discussion_unlocks,
       "${schema}".posts,
       "${schema}".weekly_scores,
       "${schema}".submissions,
@@ -110,7 +113,7 @@ describe("PostgreSQL schema v1", { concurrent: false }, () => {
     const history = await client.query(
       "SELECT * FROM pgmigrations ORDER BY id",
     );
-    expect(history.rows).toHaveLength(1);
+    expect(history.rows).toHaveLength(2);
 
     expect(await migrate("up")).toEqual([]);
     expect(await migrate("up")).toEqual([]);
@@ -126,7 +129,7 @@ describe("PostgreSQL schema v1", { concurrent: false }, () => {
   it("rolls back and reapplies inside its temporary schema", async () => {
     await createUser();
     try {
-      expect(await migrate("down")).toHaveLength(1);
+      expect(await migrate("down")).toHaveLength(2);
       const tables = await client.query<{ table_name: string }>(
         `SELECT table_name FROM information_schema.tables
           WHERE table_schema = $1 ORDER BY table_name`,
