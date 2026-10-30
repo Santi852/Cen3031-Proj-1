@@ -8,7 +8,6 @@ import {
   checkSolve,
   DiscussionError,
   getDiscussion,
-  IS_DEMO,
   listSampleProblems,
   type Discussion,
   type Problem as ProblemInfo,
@@ -106,14 +105,6 @@ function ProblemHeader({ problem }: { problem: ProblemInfo }) {
           <ExternalLinkIcon />
           <span className="visually-hidden">(opens in a new tab)</span>
         </a>
-        {IS_DEMO && (
-          <span
-            className="demo-badge"
-            title="Sample data until the discussion API (1-18) is ready"
-          >
-            Demo data
-          </span>
-        )}
       </div>
     </header>
   );

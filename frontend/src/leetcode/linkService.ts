@@ -1,6 +1,7 @@
-// Link-account service. The real endpoint is Matias's 1-04, which isn't
-// built yet, so linkLeetCode() is a stub that fakes each outcome based on
-// the username. Swap the body for a fetch() call once 1-04 is merged.
+// Link-account service, backed by Matias's 1-04 (POST /leetcode/link and
+// GET /leetcode/account).
+import { ApiError, apiFetch } from "./apiClient";
+
 export type DifficultyCounts = { easy: number; medium: number; hard: number };
 
 export type LinkedAccount = {
@@ -8,8 +9,11 @@ export type LinkedAccount = {
   counts: DifficultyCounts;
 };
 
-// The three failures the backlog asks us to show separately.
-export type LinkErrorKind = "not_found" | "private" | "unavailable";
+// The three failures the backlog asks us to show separately, plus "rejected"
+// for the rest (name already taken, invalid username...), which retrying
+// won't fix. The server's message explains those.
+export type LinkErrorKind =
+  "not_found" | "private" | "unavailable" | "rejected";
 
 export class LinkError extends Error {
   kind: LinkErrorKind;
@@ -20,39 +24,46 @@ export class LinkError extends Error {
   }
 }
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Stands in for the linked account the real 1-04 saves in the database, so
-// the dashboard stub can see a link made on this page. Resets on page reload.
-let linkedUsername: string | null = null;
-
-export function getLinkedUsername() {
-  return linkedUsername;
-}
-
-// Stub usernames for testing by hand: "missing-user", "private-user", "down".
-// Anything else succeeds.
-export async function linkLeetCode(username: string): Promise<LinkedAccount> {
-  await wait(800); // simulate network latency
-
-  switch (username.toLowerCase()) {
-    case "missing-user":
-      throw new LinkError(
+function toLinkError(err: unknown, username: string) {
+  if (!(err instanceof ApiError)) throw err;
+  switch (err.kind) {
+    case "not_found":
+      return new LinkError(
         "not_found",
         `We could not find a LeetCode account with the username "${username}". Please check your spelling and try again.`,
       );
-    case "private-user":
-      throw new LinkError(
+    case "private":
+      return new LinkError(
         "private",
         "That profile is private. Make it public in your LeetCode settings, then try again.",
       );
-    case "down":
-      throw new LinkError(
+    case "unavailable":
+      return new LinkError(
         "unavailable",
         "LeetCode isn't responding right now. Try again in a few minutes.",
       );
+    case "network":
+      return new LinkError("unavailable", err.message);
     default:
-      linkedUsername = username;
-      return { username, counts: { easy: 42, medium: 17, hard: 3 } };
+      return new LinkError("rejected", err.message);
+  }
+}
+
+// null means no LeetCode account is linked yet.
+export async function getLinkedAccount(): Promise<LinkedAccount | null> {
+  const account = await apiFetch<LinkedAccount | { linked: false }>(
+    "/leetcode/account",
+  );
+  return "username" in account ? account : null;
+}
+
+export async function linkLeetCode(username: string): Promise<LinkedAccount> {
+  try {
+    return await apiFetch<LinkedAccount>("/leetcode/link", {
+      method: "POST",
+      body: { username },
+    });
+  } catch (err) {
+    throw toLinkError(err, username);
   }
 }

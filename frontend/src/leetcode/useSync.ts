@@ -50,9 +50,14 @@ export function useSync(onSynced?: () => void) {
   // the component after it has unmounted.
   useEffect(() => {
     let cancelled = false;
-    void getSyncStatus().then((status) => {
-      if (!cancelled) apply(status);
-    });
+    getSyncStatus().then(
+      (status) => {
+        if (!cancelled) apply(status);
+      },
+      // Only the "Last synced" text is missing; pressing Refresh still works
+      // and reports any real problem.
+      () => {},
+    );
     return () => {
       cancelled = true;
     };

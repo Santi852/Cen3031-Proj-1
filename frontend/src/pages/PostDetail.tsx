@@ -11,6 +11,7 @@ import {
   getPost,
   LANGUAGES,
   labelFor,
+  LIKES_ENABLED,
   PostError,
   setLiked,
   type Post,
@@ -83,7 +84,7 @@ export default function PostDetail() {
       <header className="post-header">
         <div className="post-title-row">
           <h2 id="post-title">{post.title}</h2>
-          <LikeButton slug={slug} post={post} />
+          {LIKES_ENABLED && <LikeButton slug={slug} post={post} />}
         </div>
         <PostMeta post={post} />
       </header>
@@ -93,22 +94,14 @@ export default function PostDetail() {
         language={post.language}
         label={`${labelFor(LANGUAGES, post.language)} code`}
       />
-      {isOwner && <OwnerActions slug={slug} post={post} userId={user.id} />}
+      {isOwner && <OwnerActions slug={slug} post={post} />}
     </section>
   );
 }
 
 // Delete asks once more inline instead of a browser confirm() popup, which
 // can't be styled and blocks the whole page.
-function OwnerActions({
-  slug,
-  post,
-  userId,
-}: {
-  slug: string;
-  post: Post;
-  userId: string;
-}) {
+function OwnerActions({ slug, post }: { slug: string; post: Post }) {
   const navigate = useNavigate();
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -118,7 +111,7 @@ function OwnerActions({
     setDeleting(true);
     setError("");
     try {
-      await deletePost(slug, post.id, userId);
+      await deletePost(slug, post.id);
       navigate(`/problem/${slug}`, { replace: true });
     } catch (err) {
       setError(

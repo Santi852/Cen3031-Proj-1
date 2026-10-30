@@ -8,17 +8,17 @@ import Loading from "../components/Loading";
 import { useAutoAdvance } from "../components/useAutoAdvance";
 import {
   getLeaderboard,
-  IS_DEMO,
   type Leaderboard,
   type LeaderboardEntry,
   type LeaderboardPeriod,
 } from "../leetcode/leaderboardService";
 
-// Slide order. All time comes first on purpose: it's the board you see when
-// the page opens.
+// Slide order. The API only has the weekly board so far. When monthly and
+// all-time exist, add them back above it: { value: "all", label: "All time",
+// empty: "No scores yet" } and { value: "month", label: "This month", empty:
+// "No scores this month yet" }. All time goes first, so it's the board you see
+// when the page opens.
 const PERIODS: { value: LeaderboardPeriod; label: string; empty: string }[] = [
-  { value: "all", label: "All time", empty: "No scores yet" },
-  { value: "month", label: "This month", empty: "No scores this month yet" },
   { value: "week", label: "This week", empty: "No scores this week yet" },
 ];
 
@@ -37,7 +37,7 @@ export default function LeaderboardPage() {
   useEffect(() => {
     // Ignore the answer if the user left the page before it arrived.
     let cancelled = false;
-    Promise.all(PERIODS.map((p) => getLeaderboard(p.value, userId))).then(
+    Promise.all(PERIODS.map((p) => getLeaderboard(p.value))).then(
       (boards) => {
         if (!cancelled) setState({ status: "ready", boards });
       },
@@ -52,7 +52,7 @@ export default function LeaderboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [userId, reloads]);
+  }, [reloads]);
 
   const retry = () => {
     setState({ status: "loading" });
@@ -64,14 +64,6 @@ export default function LeaderboardPage() {
       <section className="leaderboard" aria-labelledby="leaderboard-title">
         <header className="leaderboard-header">
           <h2 id="leaderboard-title">Global</h2>
-          {IS_DEMO && (
-            <span
-              className="demo-badge"
-              title="Sample data until the leaderboard API (1-16) is ready"
-            >
-              Demo data
-            </span>
-          )}
         </header>
         {state.status === "loading" && (
           <Loading label="Loading the leaderboard…" />
@@ -148,28 +140,30 @@ function Carousel({
         ))}
       </div>
 
-      <div className="leaderboard-controls">
-        <div className="leaderboard-dots">
-          {PERIODS.map((p, i) => (
-            <button
-              key={p.value}
-              type="button"
-              className="leaderboard-dot"
-              aria-label={`Show ${p.label}`}
-              aria-current={index === i ? "true" : undefined}
-              onClick={() => goTo(i)}
-            />
-          ))}
+      {boards.length > 1 && (
+        <div className="leaderboard-controls">
+          <div className="leaderboard-dots">
+            {PERIODS.map((p, i) => (
+              <button
+                key={p.value}
+                type="button"
+                className="leaderboard-dot"
+                aria-label={`Show ${p.label}`}
+                aria-current={index === i ? "true" : undefined}
+                onClick={() => goTo(i)}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label={paused ? "Resume auto-scroll" : "Pause auto-scroll"}
+            onClick={togglePaused}
+          >
+            {paused ? <PlayIcon /> : <PauseIcon />}
+          </button>
         </div>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label={paused ? "Resume auto-scroll" : "Pause auto-scroll"}
-          onClick={togglePaused}
-        >
-          {paused ? <PlayIcon /> : <PauseIcon />}
-        </button>
-      </div>
+      )}
     </div>
   );
 }
@@ -187,8 +181,11 @@ function Slide({
   const { top, you } = board;
 
   // Always the top 3, then one more row: your own spot if you're below the
-  // top 3, otherwise 4th place so the board still has four rows.
-  const youInTop3 = you !== null && you.rank <= 3;
+  // top 3, otherwise 4th place so the board still has four rows. This checks
+  // the rows, not your rank: when many people tie (everyone has 0 at the start
+  // of a week) you can be ranked 1st without being one of the first three.
+  const youInTop3 =
+    you !== null && top.slice(0, 3).some((e) => e.userId === you.userId);
   const fourth = you && !youInTop3 ? you : top[3];
   const rows = fourth ? [...top.slice(0, 3), fourth] : top.slice(0, 3);
 

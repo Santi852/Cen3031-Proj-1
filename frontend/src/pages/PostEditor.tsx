@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import Editor from "react-simple-code-editor";
+import EditorModule from "react-simple-code-editor";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import ErrorMessage from "../components/ErrorMessage";
@@ -16,6 +16,12 @@ import {
   updatePost,
   type PostDraft,
 } from "../leetcode/postService";
+
+// This package is CommonJS, and the build hands us its whole module object
+// instead of the default export, which crashed the page. Accept either shape.
+const Editor =
+  (EditorModule as unknown as { default?: typeof EditorModule }).default ??
+  EditorModule;
 
 type Field = keyof PostDraft;
 type FieldErrors = Partial<Record<Field, string>>;
@@ -149,7 +155,6 @@ function PostForm({
   initial: PostDraft;
 }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [draft, setDraft] = useState(initial);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
@@ -180,7 +185,6 @@ function PostForm({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!user) return;
     const found = validate(draft);
     setErrors(found);
     const firstInvalid = (Object.keys(FIELD_IDS) as Field[]).find(
@@ -195,8 +199,8 @@ function PostForm({
     setSaveError("");
     try {
       const post = postId
-        ? await updatePost(slug, postId, draft, user.id)
-        : await createPost(slug, draft, user);
+        ? await updatePost(slug, postId, draft)
+        : await createPost(slug, draft);
       navigate(`/problem/${slug}/posts/${post.id}`, { replace: true });
     } catch (err) {
       setSaveError(

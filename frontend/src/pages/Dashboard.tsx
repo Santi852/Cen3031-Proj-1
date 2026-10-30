@@ -8,7 +8,6 @@ import Loading from "../components/Loading";
 import { RefreshButton, SyncStatus } from "../components/RefreshButton";
 import {
   getDashboard,
-  IS_DEMO,
   type DashboardData,
   type DashboardRange,
 } from "../leetcode/dashboardService";
@@ -101,14 +100,6 @@ export default function Dashboard() {
               <span className="dashboard-card-username" title={username}>
                 {username}
               </span>
-              {IS_DEMO && (
-                <span
-                  className="demo-badge"
-                  title="Sample data until the dashboard API (1-12) is ready"
-                >
-                  Demo data
-                </span>
-              )}
             </p>
           </div>
           <div className="dashboard-card-actions">

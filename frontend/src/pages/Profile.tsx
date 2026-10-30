@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useApiStatus } from "../components/useApiStatus";
-import { getLinkedUsername } from "../leetcode/linkService";
+import { getLinkedAccount } from "../leetcode/linkService";
 
 // Account details, linked services and sign out. Later the natural home for
 // settings such as weekly goals and the timezone setting (1-11).
@@ -9,9 +10,26 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const apiStatus = useApiStatus();
-  // Stub: the link-account stub remembers the username until a page reload.
-  // Swap for the real linked account once Matias's 1-04 is merged.
-  const leetcodeUsername = getLinkedUsername();
+  // undefined until the server answers, null if nothing is linked.
+  const [leetcodeUsername, setLeetcodeUsername] = useState<
+    string | null | undefined
+  >(undefined);
+  const [linkError, setLinkError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getLinkedAccount().then(
+      (account) => {
+        if (!cancelled) setLeetcodeUsername(account?.username ?? null);
+      },
+      () => {
+        if (!cancelled) setLinkError(true);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSignOut() {
     await signOut();
@@ -33,12 +51,20 @@ export default function Profile() {
           <div>
             <p className="profile-row-title">LeetCode</p>
             <p className="profile-row-detail">
-              {leetcodeUsername ?? "Not linked"}
+              {linkError
+                ? "Couldn't load"
+                : leetcodeUsername === undefined
+                  ? "Loading…"
+                  : (leetcodeUsername ?? "Not linked")}
             </p>
           </div>
-          <Link to="/link-account" className="button button-secondary">
-            {leetcodeUsername ? "Change" : "Link"}
-          </Link>
+          {/* The API doesn't allow switching accounts once linked, so there's
+              no Change button. */}
+          {leetcodeUsername === null && (
+            <Link to="/link-account" className="button button-secondary">
+              Link
+            </Link>
+          )}
         </div>
       </section>
 
