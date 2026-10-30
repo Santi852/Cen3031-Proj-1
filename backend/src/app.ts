@@ -2,19 +2,25 @@ import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import { createAuthRouter, type AuthOptions } from "./auth/routes.js";
 
-export function createApp(options: AuthOptions & { frontendOrigin?: string }) {
+import { createSprintRouter, type SprintOptions } from "./sprint1.js";
+import { ApiError } from "./leetcode.js";
+
+export function createApp(
+  options: AuthOptions & SprintOptions & { frontendOrigin?: string },
+) {
   const app = express();
   app.disable("x-powered-by");
   const frontendOrigin = options.frontendOrigin ?? "http://localhost:5173";
   app.use(
     cors({
       origin: (origin, callback) => callback(null, origin === frontendOrigin),
-      methods: ["GET", "POST", "OPTIONS"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
   );
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
   app.use("/api/auth", createAuthRouter(options));
+  app.use("/api", createSprintRouter(options));
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found." });
   });
@@ -27,6 +33,18 @@ export function createApp(options: AuthOptions & { frontendOrigin?: string }) {
   ) => {
     if (res.headersSent) {
       next(error);
+      return;
+    }
+    if (error instanceof ApiError) {
+      if (error.status === 429)
+        res.set("Retry-After", String(error.minutesRemaining * 60));
+      res.status(error.status).json({
+        error: error.message,
+        kind: error.kind,
+        ...(error.minutesRemaining
+          ? { minutesRemaining: error.minutesRemaining }
+          : {}),
+      });
       return;
     }
     const type =
