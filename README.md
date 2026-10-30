@@ -20,7 +20,7 @@ Task tracking and progress live on the [StackSprint project board](https://githu
 
 ## Status
 
-The TypeScript scaffold includes a React/Vite frontend, an Express API, shared lint/format settings, and automated checks. PostgreSQL migrations and the sign-up/sign-in API are available. The frontend sign-in/sign-up flow still uses a development-only browser storage stub and needs to be connected to the API separately.
+The TypeScript scaffold includes a React/Vite frontend, an Express API, shared lint/format settings, and automated checks. PostgreSQL migrations and the sign-up/sign-in API are available. The frontend sign-in/sign-up flow uses the backend authentication API.
 
 ## Local Setup
 
@@ -68,7 +68,11 @@ Run these commands from the repository root:
 | `npm run test:db`      | Database and authentication integration tests using `TEST_DATABASE_URL`     |
 | `npm run test:e2e`     | Playwright smoke test; starts both development servers automatically        |
 
-Before the first browser test, complete backend setup and run `npx playwright install chromium` from `frontend/`. Then return to the repository root and run `npm run test:e2e`. Browser tests are separate from `npm run check`; the current browser smoke test covers the existing UI shell, while database-backed authentication is exercised by `npm run test:db`.
+Before the first browser test, complete backend setup and run `npx playwright install chromium` from `frontend/`. Then return to the repository root and run `npm run test:e2e`. Browser tests are separate from `npm run check`; they cover the UI shell and real API authentication. Database-backed authentication is also exercised by `npm run test:db`.
+
+The browser suite checks API health and the F-09 flow: create an account, sign out, reject an incorrect password, sign in, and reach the dashboard. It also verifies that a session survives a reload and signed-out visitors cannot access the dashboard. Each test runs in an isolated browser context. Authentication uses the backend API, and F-09 verifies successful signup and signin responses plus an authenticated account lookup against PostgreSQL.
+
+Playwright writes an HTML report to `frontend/playwright-report` and retains traces for failed tests. CI uploads the report when a check fails. Environment files such as `.env.test` and `.env.production` are ignored; only placeholder `.env.example` files should be committed.
 
 After `npm run build`, run the compiled API with `npm start --prefix backend`. GitHub Actions (`.github/workflows/ci.yml`) validates the scaffold on pull requests and pushes to `main`.
 
