@@ -24,6 +24,14 @@
   --color-medium: #b7791f;
   --color-hard: #c62828;
 
+  /* Leaderboard medals (1st-3rd). Dark text on a bright fill for contrast. */
+  --color-gold: #f5c542;
+  --color-gold-text: #3d2c00;
+  --color-silver: #cfd4dc;
+  --color-silver-text: #262b33;
+  --color-bronze: #dba277;
+  --color-bronze-text: #3b2312;
+
   /* Typography */
   --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, Consolas, monospace;
@@ -77,6 +85,13 @@
     --color-easy: #34d399;
     --color-medium: #fbbf24;
     --color-hard: #f87171;
+
+    --color-gold: #facc15;
+    --color-gold-text: #2a2000;
+    --color-silver: #cbd5e1;
+    --color-silver-text: #1e2530;
+    --color-bronze: #e0a37a;
+    --color-bronze-text: #2e1a0e;
 
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
