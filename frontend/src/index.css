@@ -648,12 +648,27 @@ button.nav-link {
   justify-content: center;
   text-decoration: none;
 }
+/* Top bar size. Must stay under ~31px (44 / √2) so the square's corners fit
+   inside the round button. The editor overrides this with its own sizes. */
+.badge-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+/* Undo the browser's default button styles; .avatar does the rest. */
+.badge-button {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
 .top-bar .icon {
   width: 24px;
   height: 24px;
 }
-/* Help sheet: a centered modal on desktop, a bottom sheet on phones. */
-.help-sheet {
+/* Help sheet and badge editor: a centered modal on desktop, a bottom sheet
+   on phones. */
+.help-sheet,
+.badge-editor {
   width: 100%;
   max-width: 480px;
   max-height: 80vh;
@@ -667,7 +682,8 @@ button.nav-link {
 }
 
 @media (max-width: 480px) {
-  .help-sheet {
+  .help-sheet,
+  .badge-editor {
     margin: auto 0 0;
     max-width: 100%;
     border-bottom: none;
@@ -682,12 +698,14 @@ button.nav-link {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .help-sheet {
+  .help-sheet,
+  .badge-editor {
     transition: none;
   }
 }
 
-.help-sheet::backdrop {
+.help-sheet::backdrop,
+.badge-editor::backdrop {
   background: rgb(0 0 0 / 0.7);
 }
 
@@ -697,10 +715,23 @@ button.nav-link {
   align-items: center;
 }
 
-.help-sheet-content {
+.help-sheet-content,
+.badge-editor-content {
   padding: var(--space-4);
   /* Keeps the last section clear of the iPhone home indicator (0 elsewhere). */
   padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+}
+
+/* The user's badge, big and centered at the top of the editor. */
+.badge-editor-preview {
+  display: flex;
+  justify-content: center;
+  margin-block: var(--space-4);
+}
+/* Two classes beat the 28px top bar size of .badge-icon alone. */
+.badge-editor-preview .badge-icon {
+  width: 112px;
+  height: 112px;
 }
 .leaderboard-carousel {
   background: var(--color-surface);
@@ -1556,4 +1587,49 @@ button.nav-link {
   .problem-table .col-star {
     width: 36px;
   }
+}
+.badge-options {
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  gap: var(--space-2);
+}
+.badge-options-label {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-strong);
+  font-weight: 600;
+}
+.badge-option {
+  cursor: pointer;
+}
+.badge-option .badge-icon {
+  width: 100%;
+  height: auto;
+}
+.badge-option:has(input:checked) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.badge-option:has(input:focus-visible) {
+  outline: 2px dashed var(--color-text-strong);
+  outline-offset: 2px;
+}
+.badge-swatch {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+}
+.badge-colors .badge-option:has(input:checked){
+  border-radius: 50%;
+}
+.badge-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
 }
