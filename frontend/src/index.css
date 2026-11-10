@@ -819,6 +819,11 @@ button.nav-link {
   color: var(--color-bronze-text);
 }
 
+/* Keep the badge at full size; long usernames shrink (and ellipsize) instead. */
+.leaderboard-row .badge-icon {
+  flex-shrink: 0;
+}
+
 .leaderboard-player {
   flex: 1;
   overflow: hidden;
