@@ -1630,7 +1630,7 @@ button.nav-link {
   border-radius: 50%;
   border: 1px solid var(--color-border);
 }
-.badge-colors .badge-option:has(input:checked){
+.badge-colors .badge-option:has(input:checked) {
   border-radius: 50%;
 }
 .badge-editor-actions {
