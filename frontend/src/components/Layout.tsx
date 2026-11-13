@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import BadgeEditor from "../badge/BadgeEditor";
+import BadgeIcon from "../badge/BadgeIcon";
+import { useMyBadge } from "../badge/useMyBadge";
 import HelpSheet from "./HelpSheet";
 import {
   CodeIcon,
@@ -31,11 +34,13 @@ export default function Layout() {
   );
 }
 
-// Help on the left next to the title, profile on the right. The help button
-// opens the help sheet.
+// Help on the left next to the title, the user's badge on the right. The
+// help button opens the help sheet; the badge opens the badge editor.
 function TopBar() {
   const { user } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [badgeOpen, setBadgeOpen] = useState(false);
+  const { badge, save } = useMyBadge(user?.id);
 
   return (
     <div className="top-bar">
@@ -56,12 +61,25 @@ function TopBar() {
           StackSprint
         </Link>
       </h1>
-      {/* Placeholder: the user's first initial. To be replaced by the
-          customizable badge. */}
+      {/* Profile is still one tap away in the tab bar, so the badge can
+          open its editor instead of linking there. */}
       {user && (
-        <Link to="/profile" className="avatar" aria-label="Profile">
-          {user.email[0].toUpperCase()}
-        </Link>
+        <button
+          type="button"
+          className="avatar badge-button"
+          aria-label="Edit your badge"
+          aria-expanded={badgeOpen}
+          onClick={() => setBadgeOpen(true)}
+        >
+          <BadgeIcon badge={badge} decorative />
+        </button>
+      )}
+      {badgeOpen && (
+        <BadgeEditor
+          badge={badge}
+          onSave={save}
+          onClose={() => setBadgeOpen(false)}
+        />
       )}
     </div>
   );

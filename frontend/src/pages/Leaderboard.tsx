@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { DEFAULT_BADGE, isBadge, type Badge } from "../badge/badge";
+import BadgeIcon from "../badge/BadgeIcon";
+import { useMyBadge } from "../badge/useMyBadge";
 import EmptyState from "../components/EmptyState";
 import ErrorMessage from "../components/ErrorMessage";
 import { PauseIcon, PlayIcon } from "../components/icons";
@@ -30,6 +33,8 @@ type State =
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
+  // Badges aren't on the server yet, so your own comes from this browser.
+  const { badge: myBadge } = useMyBadge(user?.id);
   // Bumped by "Try again" to refetch.
   const [reloads, setReloads] = useState(0);
   const [state, setState] = useState<State>({ status: "loading" });
@@ -72,7 +77,7 @@ export default function LeaderboardPage() {
           <ErrorMessage message={state.message} onRetry={retry} />
         )}
         {state.status === "ready" && (
-          <Carousel boards={state.boards} userId={userId} />
+          <Carousel boards={state.boards} userId={userId} myBadge={myBadge} />
         )}
       </section>
       <LeaguesPlaceholder />
@@ -109,9 +114,11 @@ function LeaguesPlaceholder() {
 function Carousel({
   boards,
   userId,
+  myBadge,
 }: {
   boards: Leaderboard[];
   userId: string;
+  myBadge: Badge;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const { index, goTo, paused, togglePaused } = useAutoAdvance(
@@ -135,6 +142,7 @@ function Carousel({
             key={board.period}
             board={board}
             userId={userId}
+            myBadge={myBadge}
             position={`${i + 1} of ${boards.length}`}
           />
         ))}
@@ -171,10 +179,12 @@ function Carousel({
 function Slide({
   board,
   userId,
+  myBadge,
   position,
 }: {
   board: Leaderboard;
   userId: string;
+  myBadge: Badge;
   position: string;
 }) {
   const period = PERIODS.find((p) => p.value === board.period)!;
@@ -209,6 +219,7 @@ function Slide({
                 key={entry.userId}
                 entry={entry}
                 isYou={entry.userId === userId}
+                myBadge={myBadge}
                 // Your row when you're far down (e.g. 12th) gets a gap
                 // above it, so it doesn't read as if you're 4th.
                 afterGap={entry.rank > 4}
@@ -230,12 +241,21 @@ function Slide({
 function Row({
   entry,
   isYou,
+  myBadge,
   afterGap,
 }: {
   entry: LeaderboardEntry;
   isYou: boolean;
+  myBadge: Badge;
   afterGap: boolean;
 }) {
+  // Your row shows the badge you just saved, even before the server knows
+  // it. Others use what the API sends, checked like any outside data.
+  const badge = isYou
+    ? myBadge
+    : isBadge(entry.badge)
+      ? entry.badge
+      : DEFAULT_BADGE;
   const className = [
     "leaderboard-row",
     isYou && "is-you",
@@ -253,6 +273,8 @@ function Row({
       aria-current={isYou ? "true" : undefined}
     >
       <span className="leaderboard-rank">{entry.rank}</span>
+      {/* Decorative: the name next to it already says who this is. */}
+      <BadgeIcon badge={badge} decorative />
       <span className="leaderboard-player" title={entry.username}>
         {entry.username}
       </span>

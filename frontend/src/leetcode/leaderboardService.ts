@@ -2,6 +2,7 @@
 // after each sync, ties broken by who reached the score first). 1-16 only
 // covers the weekly board; monthly and all-time are new and need to be pitched
 // to the team, and the API answers 400 for them until then.
+import type { Badge } from "../badge/badge";
 import { apiFetch } from "./apiClient";
 
 export type LeaderboardPeriod = "all" | "month" | "week";
@@ -11,6 +12,9 @@ export type LeaderboardEntry = {
   userId: string;
   username: string; // linked LeetCode username
   points: number;
+  // Proposed for #94, not sent yet: the player's badge, so everyone's shows
+  // here. Until then rows fall back to the default (your own row uses yours).
+  badge?: Badge;
 };
 
 // The page only shows the top 3 plus one more row, so the API doesn't need
