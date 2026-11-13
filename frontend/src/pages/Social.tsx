@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { DEFAULT_BADGE, isBadge, type Badge } from "../badge/badge";
-import BadgeIcon from "../badge/BadgeIcon";
+import type { Badge } from "../badge/badge";
 import { useMyBadge } from "../badge/useMyBadge";
 import EmptyState from "../components/EmptyState";
 import ErrorMessage from "../components/ErrorMessage";
+import LeaderboardRow from "../components/LeaderboardRow";
 import { PauseIcon, PlayIcon } from "../components/icons";
 import Loading from "../components/Loading";
 import { useAutoAdvance } from "../components/useAutoAdvance";
 import {
   getLeaderboard,
   type Leaderboard,
-  type LeaderboardEntry,
   type LeaderboardPeriod,
 } from "../leetcode/leaderboardService";
+import MyLeagues from "../leagues/MyLeagues";
 
 // Slide order. The API only has the weekly board so far. When monthly and
 // all-time exist, add them back above it: { value: "all", label: "All time",
@@ -30,7 +30,9 @@ type State =
   | { status: "error"; message: string }
   | { status: "ready"; boards: Leaderboard[] };
 
-export default function LeaderboardPage() {
+// The Social tab (#93): the global board on top, then your leagues (2-13).
+// Friends come later.
+export default function SocialPage() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   // Badges aren't on the server yet, so your own comes from this browser.
@@ -80,34 +82,8 @@ export default function LeaderboardPage() {
           <Carousel boards={state.boards} userId={userId} myBadge={myBadge} />
         )}
       </section>
-      <LeaguesPlaceholder />
+      <MyLeagues />
     </>
-  );
-}
-
-// Leagues aren't in the backlog yet: they need new backend work (league
-// tables, join codes, search), so this is a placeholder to show the layout
-// when pitching them to the team. The buttons stay disabled until then.
-function LeaguesPlaceholder() {
-  return (
-    <section className="leagues" aria-labelledby="leagues-title">
-      <h2 id="leagues-title">Leagues</h2>
-      <div className="leagues-actions">
-        <button type="button" className="button button-primary" disabled>
-          Create
-        </button>
-        <button type="button" className="button" disabled>
-          Join with code
-        </button>
-        <button type="button" className="button" disabled>
-          Search
-        </button>
-      </div>
-      <p className="leagues-note">
-        Coming soon: compete with friends in private leagues, with all-time
-        points and weekly wins.
-      </p>
-    </section>
   );
 }
 
@@ -215,7 +191,7 @@ function Slide({
         <>
           <ol className="leaderboard-list">
             {rows.map((entry) => (
-              <Row
+              <LeaderboardRow
                 key={entry.userId}
                 entry={entry}
                 isYou={entry.userId === userId}
@@ -235,51 +211,5 @@ function Slide({
         </>
       )}
     </article>
-  );
-}
-
-function Row({
-  entry,
-  isYou,
-  myBadge,
-  afterGap,
-}: {
-  entry: LeaderboardEntry;
-  isYou: boolean;
-  myBadge: Badge;
-  afterGap: boolean;
-}) {
-  // Your row shows the badge you just saved, even before the server knows
-  // it. Others use what the API sends, checked like any outside data.
-  const badge = isYou
-    ? myBadge
-    : isBadge(entry.badge)
-      ? entry.badge
-      : DEFAULT_BADGE;
-  const className = [
-    "leaderboard-row",
-    isYou && "is-you",
-    afterGap && "after-gap",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    // data-rank lets CSS style 1st, 2nd and 3rd: [data-rank="1"] { ... }
-    // The highlight is only color, so aria-current tells screen readers.
-    <li
-      className={className}
-      data-rank={entry.rank}
-      aria-current={isYou ? "true" : undefined}
-    >
-      <span className="leaderboard-rank">{entry.rank}</span>
-      {/* Decorative: the name next to it already says who this is. */}
-      <BadgeIcon badge={badge} decorative />
-      <span className="leaderboard-player" title={entry.username}>
-        {entry.username}
-      </span>
-      {isYou && <span className="you-pill">You</span>}
-      <span className="leaderboard-points">{entry.points} pts</span>
-    </li>
   );
 }

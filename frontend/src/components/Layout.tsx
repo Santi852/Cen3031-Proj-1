@@ -113,9 +113,10 @@ function TabBar() {
         <DashboardIcon />
         <span className="tab-label">Dashboard</span>
       </NavLink>
-      <NavLink to="/leaderboard" className={tabClass}>
+      {/* No `end`, so it stays highlighted on a league page too. */}
+      <NavLink to="/social" className={tabClass}>
         <TrophyIcon />
-        <span className="tab-label">Leaderboard</span>
+        <span className="tab-label">Social</span>
       </NavLink>
       <NavLink
         to="/profile"

@@ -69,7 +69,7 @@ export default function HelpSheet({
           <h3>Linking LeetCode</h3>
           <p>
             Go to Profile and link your LeetCode username so your solves show up
-            on the dashboard and leaderboard.
+            on the dashboard and the Social tab.
           </p>
         </section>
       </div>
