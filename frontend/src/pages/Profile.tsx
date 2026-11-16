@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useApiStatus } from "../components/useApiStatus";
+import GoalSettings from "../goals/GoalSettings";
+import { useWeeklyGoal } from "../goals/useWeeklyGoal";
 import { getLinkedAccount } from "../leetcode/linkService";
 
-// Account details, linked services and sign out. Later the natural home for
-// settings such as weekly goals and the timezone setting (1-11).
+// Account details, weekly goal, linked services and sign out. Later also the
+// home for the timezone setting (1-11).
 export default function Profile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const apiStatus = useApiStatus();
+  const weeklyGoal = useWeeklyGoal(user?.id);
   // undefined until the server answers, null if nothing is linked.
   const [leetcodeUsername, setLeetcodeUsername] = useState<
     string | null | undefined
@@ -44,6 +47,8 @@ export default function Profile() {
       <div className="profile-card">
         <p className="profile-email">{user?.email}</p>
       </div>
+
+      <GoalSettings {...weeklyGoal} />
 
       <section className="profile-card" aria-labelledby="linked-accounts">
         <h3 id="linked-accounts">Linked accounts</h3>
