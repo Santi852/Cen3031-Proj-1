@@ -1881,3 +1881,180 @@ button.nav-link {
   justify-content: flex-end;
   gap: var(--space-2);
 }
+
+/* ---- Profile ---- */
+
+/* Same card look as the dashboard, so the two tabs feel like one app. */
+.profile-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  max-width: 560px;
+  margin: var(--space-5) auto 0;
+  text-align: left;
+
+  h3 {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-lg);
+  }
+}
+.profile-email {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-medium);
+}
+/* Text on the left, its button on the right. */
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+
+  p {
+    margin: 0;
+  }
+}
+.profile-row-title {
+  color: var(--color-text-strong);
+  font-weight: var(--weight-medium);
+}
+.profile-row-detail {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.profile-sign-out {
+  display: block;
+  margin: var(--space-5) auto 0;
+}
+.profile-meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+/* ---- Weekly goal (#91) ---- */
+
+/* The ring's center: "3" big, "/5" smaller and quieter on the same line. */
+.difficulty-ring-count {
+  display: flex;
+  align-items: baseline;
+}
+.difficulty-ring-goal {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+/* Ring sections for difficulty targets: each section's full length is drawn
+   in its own color at low opacity (the "dull" part), and the bright fill sits
+   on top. Opacity instead of new color tokens, so it works in dark mode too. */
+.difficulty-ring-section-track {
+  opacity: 0.25;
+}
+/* The "any difficulty" section, when the targets don't cover the total. */
+.difficulty-ring-any {
+  stroke: var(--color-accent);
+}
+
+/* "/2" after a count: the count stays the star, the target sits back. */
+.difficulty-target {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+/* A met target gets a check. The "/ ''" hides it from screen readers, which
+   already hear "target met" from the hidden text. */
+.difficulty-counts .is-met dt::after {
+  content: " ✓" / "";
+  color: var(--color-success);
+}
+
+.goal-status {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  font-size: var(--text-sm);
+  /* Message on the left, Edit goal on the right. */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+
+  p {
+    margin: 0;
+  }
+
+  &.is-reached {
+    color: var(--color-success);
+    font-weight: var(--weight-medium);
+    background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  }
+}
+
+/* Smaller than a normal button: it's a side action next to the message. */
+.goal-edit {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* No goal yet: a real button, centered under the ring, so it reads as
+   something to do rather than a footnote. */
+.goal-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.goal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.goal-targets-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  color: var(--color-text-strong);
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--color-accent);
+  }
+}
+/* Easy / Medium / Hard side by side. A fieldset has a border, padding and a
+   min-width by default, so reset those first. */
+.goal-targets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  input {
+    width: 100%;
+    min-width: 0; /* lets the inputs shrink to fit a phone */
+  }
+  .field-hint {
+    grid-column: 1 / -1;
+  }
+}
+.goal-form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* Pushes Cancel and Save to the right, keeping Remove apart from them. */
+.goal-remove {
+  margin-right: auto;
+  color: var(--color-danger);
+}
