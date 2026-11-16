@@ -1,10 +1,11 @@
 import Layout from "./components/Layout";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import LinkAccount from "./pages/LinkAccount";
-import Leaderboard from "./pages/Leaderboard";
+import Social from "./pages/Social";
+import League from "./pages/League";
 import Problem from "./pages/Problem";
 import Problems from "./pages/Problems";
 import PostDetail from "./pages/PostDetail";
@@ -19,7 +20,13 @@ export default function App() {
       <Route path="/" element={<Layout />}>
         <Route element={<RequireAuth />}>
           <Route index element={<Dashboard />} />
-          <Route path="leaderboard" element={<Leaderboard />} />
+          <Route path="social" element={<Social />} />
+          <Route path="social/leagues/:id" element={<League />} />
+          {/* Old links and bookmarks to the Leaderboard tab still work. */}
+          <Route
+            path="leaderboard"
+            element={<Navigate to="/social" replace />}
+          />
           <Route path="profile" element={<Profile />} />
           <Route path="link-account" element={<LinkAccount />} />
           <Route path="problems" element={<Problems />} />
