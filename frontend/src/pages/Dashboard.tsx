@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ActivityCard from "../activity/ActivityCard";
 import { useAuth } from "../auth/AuthContext";
 import DifficultyBreakdown from "../components/DifficultyBreakdown";
 import DifficultyRing from "../components/DifficultyRing";
 import EmptyState from "../components/EmptyState";
 import ErrorMessage from "../components/ErrorMessage";
+import InfoTip from "../components/InfoTip";
 import Loading from "../components/Loading";
 import { goalProgress, progressMessage } from "../goals/goal";
 import { useWeeklyGoal, type GoalState } from "../goals/useWeeklyGoal";
@@ -96,69 +98,101 @@ export default function Dashboard() {
       range === "week" && goalState.status === "ready" ? goalState.goal : null;
 
     body = (
-      <section
-        className="dashboard-card"
-        aria-labelledby="leetcode-card-title"
-        aria-busy={loading}
-      >
-        <header className="dashboard-card-header">
-          <div>
-            <h3 id="leetcode-card-title">LeetCode solves</h3>
-            <p className="dashboard-card-subtitle">
-              {/* Its own element so CSS can shorten a long name with "…";
+      <>
+        {/* First: "did I show up this week" is the quick daily check. It's
+            always this week, so it ignores the range toggle below. */}
+        <ActivityCard reloadKey={reloads} />
+        <section
+          className="dashboard-card"
+          aria-labelledby="leetcode-card-title"
+          aria-busy={loading}
+        >
+          <header className="dashboard-card-header">
+            <div>
+              <h3 id="leetcode-card-title">LeetCode solves</h3>
+              <p className="dashboard-card-subtitle">
+                {/* Its own element so CSS can shorten a long name with "…";
                   title shows the full name on hover. */}
-              <span className="dashboard-card-username" title={username}>
-                {username}
-              </span>
-            </p>
-          </div>
-          <div className="dashboard-card-actions">
-            <RefreshButton sync={sync} />
-            {/* The range filters everything in the card, so it sits at the
-                top. aria-pressed tells screen readers which one is selected. */}
-            <div className="range-toggle" role="group" aria-label="Time range">
-              {RANGES.map((r) => (
-                <button
-                  key={r.value}
-                  type="button"
-                  className="range-toggle-option"
-                  aria-pressed={range === r.value}
-                  onClick={() => setRange(r.value)}
-                >
-                  {r.label}
-                </button>
-              ))}
+                <span className="dashboard-card-username" title={username}>
+                  {username}
+                </span>
+              </p>
             </div>
-          </div>
-        </header>
+            <div className="dashboard-card-actions">
+              <RefreshButton sync={sync} />
+              {/* The range filters everything in the card, so it sits at the
+                top. aria-pressed tells screen readers which one is selected. */}
+              <div
+                className="range-toggle"
+                role="group"
+                aria-label="Time range"
+              >
+                {RANGES.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    className="range-toggle-option"
+                    aria-pressed={range === r.value}
+                    onClick={() => setRange(r.value)}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              <InfoTip label="About LeetCode solves">
+                <p>
+                  Problems you solved for the first time on LeetCode in the
+                  selected range, split by difficulty. Solving one again doesn't
+                  count twice.
+                </p>
+                <p>
+                  <strong>This week</strong> starts Monday 00:00 UTC, the same
+                  week as the leaderboard.
+                </p>
+                <p>
+                  Refresh pulls in your latest solves, once every 15 minutes.
+                  Each refresh reads your 20 most recent accepted submissions,
+                  so refresh often on busy days.
+                </p>
+                <p>
+                  With a weekly goal, the ring fills toward it. Set it in
+                  Profile.
+                </p>
+              </InfoTip>
+            </div>
+          </header>
 
-        {/* With a goal, zero solves still shows the empty ring (0/5), which
+          {/* With a goal, zero solves still shows the empty ring (0/5), which
             says more than "no solves yet". */}
-        {total === 0 && !goal ? (
-          <EmptyState
-            title={`No solves ${range === "week" ? "this week" : "in the last 30 days"} yet`}
-            message="Solve a problem on LeetCode, then hit Refresh."
-          />
-        ) : (
-          // The ring's center shows the total, so no separate total line.
-          <div className="dashboard-breakdown">
-            <DifficultyRing
-              counts={counts}
-              goal={goal?.total}
-              targets={goal ?? undefined}
+          {total === 0 && !goal ? (
+            <EmptyState
+              title={`No solves ${range === "week" ? "this week" : "in the last 30 days"} yet`}
+              message="Solve a problem on LeetCode, then hit Refresh."
             />
-            <DifficultyBreakdown counts={counts} targets={goal ?? undefined} />
-          </div>
-        )}
+          ) : (
+            // The ring's center shows the total, so no separate total line.
+            <div className="dashboard-breakdown">
+              <DifficultyRing
+                counts={counts}
+                goal={goal?.total}
+                targets={goal ?? undefined}
+              />
+              <DifficultyBreakdown
+                counts={counts}
+                targets={goal ?? undefined}
+              />
+            </div>
+          )}
 
-        {range === "week" && <GoalStatus state={goalState} counts={counts} />}
+          {range === "week" && <GoalStatus state={goalState} counts={counts} />}
 
-        {/* "Last synced" is good-to-know, not something to act on, so it
+          {/* "Last synced" is good-to-know, not something to act on, so it
             sits quietly at the bottom of the card. */}
-        <footer className="dashboard-card-footer">
-          <SyncStatus sync={sync} />
-        </footer>
-      </section>
+          <footer className="dashboard-card-footer">
+            <SyncStatus sync={sync} />
+          </footer>
+        </section>
+      </>
     );
   }
 

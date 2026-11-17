@@ -1,19 +1,24 @@
+import type { ReactNode } from "react";
 import { DEFAULT_BADGE, isBadge, type Badge } from "../badge/badge";
 import BadgeIcon from "../badge/BadgeIcon";
 import type { LeaderboardEntry } from "../leetcode/leaderboardService";
 
-// One ranked row, shared by the global board and every league board so they
-// look and behave the same.
+// One ranked row, shared by the global board, every league board and the
+// friends' streak board so they look and behave the same.
 export default function LeaderboardRow({
   entry,
   isYou,
   myBadge,
   afterGap = false,
+  score,
 }: {
   entry: LeaderboardEntry;
   isYou: boolean;
   myBadge: Badge;
   afterGap?: boolean;
+  // What goes on the right. Defaults to "12 pts"; the streak board passes a
+  // flame and a number instead.
+  score?: ReactNode;
 }) {
   // Your row shows the badge you just saved, even before the server knows
   // it. Others use what the API sends, checked like any outside data.
@@ -44,7 +49,7 @@ export default function LeaderboardRow({
       <span className="leaderboard-player" title={entry.username}>
         {entry.username}
       </span>
-      <span className="leaderboard-points">{entry.points} pts</span>
+      {score ?? <span className="leaderboard-points">{entry.points} pts</span>}
     </li>
   );
 }
