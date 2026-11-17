@@ -18,6 +18,8 @@
   --color-danger: #c62828;
   --color-danger-bg: rgba(198, 40, 40, 0.08);
   --color-success: #2e7d32;
+  /* Streak flames (#92) */
+  --color-streak: #ea580c;
 
   /* LeetCode difficulty, for breakdown cards and charts */
   --color-easy: #1f8a5b;
@@ -81,6 +83,7 @@
     --color-danger: #f87171;
     --color-danger-bg: rgba(248, 113, 113, 0.12);
     --color-success: #4ade80;
+    --color-streak: #fb923c;
 
     --color-easy: #34d399;
     --color-medium: #fbbf24;

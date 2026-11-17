@@ -2058,3 +2058,219 @@ button.nav-link {
   margin-right: auto;
   color: var(--color-danger);
 }
+
+/* ---- Activity strip and streaks (#92) ---- */
+
+/* Seven equal columns, so the strip fills the card on any screen. */
+.activity-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.activity-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* A square per day. More solves = stronger purple, like GitHub's grid but
+   with the count written inside, so it doesn't rely on color alone. */
+.activity-cell {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 44px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--color-border);
+  color: var(--color-text-strong);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+.activity-day[data-level="1"] .activity-cell {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+.activity-day[data-level="2"] .activity-cell {
+  background: color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+.activity-day[data-level="3"] .activity-cell {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+/* Before we started tracking: an empty outline, so it can't be mistaken for
+   a day with no solves. */
+.activity-day[data-level="unknown"] .activity-cell {
+  background: transparent;
+  border: 1px dashed var(--color-border);
+}
+.activity-weekday {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+/* Today gets a ring around its square and a stronger label. */
+.activity-day.is-today {
+  .activity-cell {
+    outline: 2px solid var(--color-accent-border);
+    outline-offset: 2px;
+  }
+  .activity-weekday {
+    color: var(--color-accent);
+    font-weight: var(--weight-medium);
+  }
+}
+
+/* The two streaks side by side as small stat tiles. */
+.activity-streaks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+
+  div {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+  }
+  dt {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  dd {
+    margin: 0;
+    color: var(--color-text-strong);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+  }
+}
+.activity-streak-unit {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+.activity-note {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+}
+/* Later this week: a plain outline, a calmer "not yet" than untracked days'
+   dashed one. */
+.activity-day[data-level="upcoming"] .activity-cell {
+  background: transparent;
+  border: 1px solid var(--color-border);
+}
+
+/* Each streak: flame, number, unit on one line. */
+.activity-streaks dd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* Gray while there's no streak, orange and filled in while it's alive. */
+.activity-flame {
+  display: flex;
+  color: var(--color-text-muted);
+
+  .icon {
+    width: 22px;
+    height: 22px;
+  }
+}
+.activity-streak.is-lit .activity-flame {
+  color: var(--color-streak);
+
+  .icon {
+    fill: color-mix(in srgb, currentColor 30%, transparent);
+  }
+}
+
+/* ---- "?" info button (InfoTip) ---- */
+
+/* The panel is placed relative to the button. */
+.info-tip {
+  position: relative;
+}
+.info-tip-button .icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+/* Opens under the button, lined up with its right edge so it never runs
+   off the right side of the card. */
+.info-tip-panel {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 20;
+  width: min(300px, calc(100vw - 48px));
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  text-align: left;
+
+  p {
+    margin: 0;
+  }
+  p + p {
+    margin-top: var(--space-2);
+  }
+  strong {
+    color: var(--color-text-strong);
+  }
+}
+
+/* ---- Activity header: title, toggle, "?" in one row ---- */
+
+/* Unlike the LeetCode card, never wrap: the toggle is small enough to fit
+   next to the title even on a phone. */
+.activity-card-header {
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+
+  /* Pushes the "?" to the far right. */
+  .info-tip {
+    margin-left: auto;
+  }
+}
+/* A smaller pill than the range toggle. It keeps its own size on phones,
+   where the range toggle stretches full width. */
+.activity-view-toggle {
+  flex: none;
+  padding: 2px;
+
+  .range-toggle-option {
+    flex: none;
+    padding: 2px var(--space-3);
+    font-size: var(--text-xs);
+  }
+}
+
+/* ---- Friends' streak board (Activity card) ---- */
+
+/* Flame + number on the right of each row, instead of "12 pts". Gray at 0,
+   orange while the streak is alive, same as the streak tiles. */
+.streak-score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-strong);
+  font-weight: var(--weight-bold);
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-muted);
+  }
+  &.is-lit .icon {
+    color: var(--color-streak);
+    fill: color-mix(in srgb, var(--color-streak) 30%, transparent);
+  }
+}
