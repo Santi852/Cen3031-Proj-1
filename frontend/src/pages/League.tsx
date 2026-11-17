@@ -7,8 +7,10 @@ import ErrorMessage from "../components/ErrorMessage";
 import LeaderboardRow from "../components/LeaderboardRow";
 import { SettingsIcon } from "../components/icons";
 import Loading from "../components/Loading";
+import PlayerSheet from "../friends/PlayerSheet";
 import LeagueSettings from "../leagues/LeagueSettings";
 import { getLeague, LeagueError, type League } from "../leagues/leagueService";
+import type { LeaderboardEntry } from "../leetcode/leaderboardService";
 
 type State =
   | { status: "loading" }
@@ -25,6 +27,8 @@ export default function LeaguePage() {
   const [state, setState] = useState<State>({ status: "loading" });
   const [reloads, setReloads] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // The member whose name was tapped, to follow them (#93).
+  const [player, setPlayer] = useState<LeaderboardEntry | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -110,6 +114,7 @@ export default function LeaguePage() {
                   entry={entry}
                   isYou={entry.userId === user.id}
                   myBadge={myBadge}
+                  onPlayerClick={setPlayer}
                 />
               ))}
             </ol>
@@ -143,6 +148,9 @@ export default function LeaguePage() {
             />
           )}
         </>
+      )}
+      {player && (
+        <PlayerSheet player={player} onClose={() => setPlayer(null)} />
       )}
     </section>
   );

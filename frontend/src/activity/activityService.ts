@@ -1,4 +1,5 @@
 import { getCurrentUser } from "../auth/authService";
+import { getFollowing } from "../friends/friendService";
 import { getLinkedAccount } from "../leetcode/linkService";
 import {
   addDays,
@@ -89,7 +90,8 @@ function demoHistory(from: DateKey, today: DateKey): Map<DateKey, number> {
 
 // ---- Friends' streaks (Friends tab of the Activity card) -------------------
 
-// STUB until following exists (#93 Friends) and Matias adds this. Proposed:
+// STUB until Matias adds this. Uses who you follow from friendService (#93).
+// Proposed:
 //   GET /api/friends/streaks
 //   -> {
 //        top: RankedStreak[],     // you + everyone you follow, ranked by
@@ -105,35 +107,26 @@ export type StreakBoard = {
   followingCount: number;
 };
 
-// "demo" = a few made-up friends (two tied with you), "none" = you follow
-// nobody yet, "error" = the request fails.
-const FRIENDS_SCENARIO: "demo" | "none" | "error" = "demo";
-
-const DEMO_FRIENDS = [
-  { userId: "demo-1", username: "maria_codes", streak: 12 },
-  { userId: "demo-2", username: "dp_dan", streak: 7 },
-  { userId: "demo-3", username: "graphgal", streak: 4 },
-  { userId: "demo-4", username: "two_pointer_tom", streak: 1 },
-  { userId: "demo-5", username: "binary_bea", streak: 0 },
-];
-
 export async function getFriendStreaks(): Promise<StreakBoard> {
-  if (FRIENDS_SCENARIO === "error") {
-    await new Promise((r) => setTimeout(r, 300));
-    throw new Error("Couldn't load your friends' streaks.");
-  }
+  const user = getCurrentUser();
+  if (!user) throw new Error("Sign in to see your friends' streaks.");
   // Your own row: your real id (so it gets highlighted), your LeetCode name
   // and your streak from the activity stub.
-  const [activity, account] = await Promise.all([
+  const [activity, account, following] = await Promise.all([
     getActivity(),
     getLinkedAccount().catch(() => null),
+    getFollowing(user),
   ]);
   const me = {
-    userId: getCurrentUser()?.id ?? "me",
+    userId: user.id,
     username: account?.username ?? "you",
     streak: activity.dailyStreak,
   };
-  const friends = FRIENDS_SCENARIO === "demo" ? DEMO_FRIENDS : [];
+  const friends = following.map((f) => ({
+    userId: f.userId,
+    username: f.username,
+    streak: f.dayStreak,
+  }));
   const ranked = rankStreaks([me, ...friends]);
   return {
     top: ranked.slice(0, 4),
