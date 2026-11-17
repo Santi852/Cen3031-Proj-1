@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import HelpSheet from "../components/HelpSheet";
 import { useApiStatus } from "../components/useApiStatus";
 import GoalSettings from "../goals/GoalSettings";
 import { useWeeklyGoal } from "../goals/useWeeklyGoal";
@@ -18,6 +19,8 @@ export default function Profile() {
     string | null | undefined
   >(undefined);
   const [linkError, setLinkError] = useState(false);
+  // Help used to be in the top bar; Friends took that spot (#93).
+  const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +75,28 @@ export default function Profile() {
           )}
         </div>
       </section>
+
+      <section className="profile-card" aria-labelledby="help-heading">
+        <div className="profile-row">
+          <div>
+            <h3 id="help-heading" className="profile-row-title">
+              How StackSprint works
+            </h3>
+            <p className="profile-row-detail">
+              Scoring, syncing, discussions and linking LeetCode.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="button button-secondary"
+            aria-expanded={helpOpen}
+            onClick={() => setHelpOpen(true)}
+          >
+            Open
+          </button>
+        </div>
+      </section>
+      <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
 
       <button
         type="button"

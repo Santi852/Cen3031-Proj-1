@@ -11,6 +11,7 @@ export default function LeaderboardRow({
   myBadge,
   afterGap = false,
   score,
+  onPlayerClick,
 }: {
   entry: LeaderboardEntry;
   isYou: boolean;
@@ -19,6 +20,9 @@ export default function LeaderboardRow({
   // What goes on the right. Defaults to "12 pts"; the streak board passes a
   // flame and a number instead.
   score?: ReactNode;
+  // Makes other players' names tappable (to follow them, #93). Your own name
+  // stays plain text: there's nothing to do with yourself.
+  onPlayerClick?: (entry: LeaderboardEntry) => void;
 }) {
   // Your row shows the badge you just saved, even before the server knows
   // it. Others use what the API sends, checked like any outside data.
@@ -46,9 +50,20 @@ export default function LeaderboardRow({
       <span className="leaderboard-rank">{entry.rank}</span>
       {/* Decorative: the name next to it already says who this is. */}
       <BadgeIcon badge={badge} decorative />
-      <span className="leaderboard-player" title={entry.username}>
-        {entry.username}
-      </span>
+      {onPlayerClick && !isYou ? (
+        <button
+          type="button"
+          className="leaderboard-player leaderboard-player-button"
+          title={entry.username}
+          onClick={() => onPlayerClick(entry)}
+        >
+          {entry.username}
+        </button>
+      ) : (
+        <span className="leaderboard-player" title={entry.username}>
+          {entry.username}
+        </span>
+      )}
       {score ?? <span className="leaderboard-points">{entry.points} pts</span>}
     </li>
   );

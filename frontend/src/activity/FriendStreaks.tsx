@@ -7,6 +7,8 @@ import ErrorMessage from "../components/ErrorMessage";
 import { FlameIcon } from "../components/icons";
 import LeaderboardRow from "../components/LeaderboardRow";
 import Loading from "../components/Loading";
+import { openFriends } from "../friends/openFriends";
+import { FOLLOWING_CHANGED } from "../friends/useFollowing";
 import { getFriendStreaks, type StreakBoard } from "./activityService";
 
 // The Friends tab of the Activity card: you and the people you follow, ranked
@@ -20,19 +22,26 @@ export default function FriendStreaks({ reloadKey }: { reloadKey: number }) {
 
   useEffect(() => {
     let cancelled = false;
-    getFriendStreaks().then(
-      (next) => {
-        if (cancelled) return;
-        setBoard(next);
-        setError(null);
-      },
-      (err: unknown) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Something went wrong.");
-      },
-    );
+    const load = () =>
+      getFriendStreaks().then(
+        (next) => {
+          if (cancelled) return;
+          setBoard(next);
+          setError(null);
+        },
+        (err: unknown) => {
+          if (cancelled) return;
+          setError(
+            err instanceof Error ? err.message : "Something went wrong.",
+          );
+        },
+      );
+    load();
+    // Follow someone on Social and this board picks them up.
+    window.addEventListener(FOLLOWING_CHANGED, load);
     return () => {
       cancelled = true;
+      window.removeEventListener(FOLLOWING_CHANGED, load);
     };
   }, [reloadKey, retries]);
 
@@ -46,7 +55,16 @@ export default function FriendStreaks({ reloadKey }: { reloadKey: number }) {
     return (
       <EmptyState
         title="No friends to compare with yet"
-        message="Once you follow people, their streaks show up here next to yours."
+        message="Follow people and their streaks show up here next to yours."
+        action={
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={() => openFriends()}
+          >
+            Find friends
+          </button>
+        }
       />
     );
   }

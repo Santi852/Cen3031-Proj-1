@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import BadgeEditor from "../badge/BadgeEditor";
 import BadgeIcon from "../badge/BadgeIcon";
 import { useMyBadge } from "../badge/useMyBadge";
-import HelpSheet from "./HelpSheet";
+import FriendsSheet from "../friends/FriendsSheet";
+import { OPEN_FRIENDS, type FriendsTab } from "../friends/openFriends";
 import {
   CodeIcon,
   DashboardIcon,
-  HelpIcon,
   ProfileIcon,
   TrophyIcon,
+  UsersIcon,
 } from "./icons";
 import { useApiStatus } from "./useApiStatus";
 
@@ -34,26 +35,43 @@ export default function Layout() {
   );
 }
 
-// Help on the left next to the title, the user's badge on the right. The
-// help button opens the help sheet; the badge opens the badge editor.
+// Friends on the left next to the title, the user's badge on the right.
+// Friends opens the friends sheet (#93); the badge opens the badge editor.
+// Help moved to Profile.
 function TopBar() {
   const { user } = useAuth();
-  const [helpOpen, setHelpOpen] = useState(false);
+  // Which tab the friends sheet opened on, or null while it's closed.
+  const [friendsTab, setFriendsTab] = useState<FriendsTab | null>(null);
   const [badgeOpen, setBadgeOpen] = useState(false);
   const { badge, save } = useMyBadge(user?.id);
 
+  // Other parts of the app open the sheet with openFriends().
+  useEffect(() => {
+    const open = (event: Event) =>
+      setFriendsTab((event as CustomEvent<FriendsTab>).detail);
+    window.addEventListener(OPEN_FRIENDS, open);
+    return () => window.removeEventListener(OPEN_FRIENDS, open);
+  }, []);
+
   return (
     <div className="top-bar">
-      <button
-        type="button"
-        className="icon-button"
-        aria-label="Help"
-        aria-expanded={helpOpen}
-        onClick={() => setHelpOpen(true)}
-      >
-        <HelpIcon />
-      </button>
-      <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
+      {user && (
+        <button
+          type="button"
+          className="icon-button"
+          aria-label="Friends"
+          aria-expanded={friendsTab !== null}
+          onClick={() => setFriendsTab("following")}
+        >
+          <UsersIcon />
+        </button>
+      )}
+      {user && friendsTab && (
+        <FriendsSheet
+          initialTab={friendsTab}
+          onClose={() => setFriendsTab(null)}
+        />
+      )}
       {/* Tapping the name goes home, like most apps. Signed out, "/" sends
           you on to sign-in. */}
       <h1>

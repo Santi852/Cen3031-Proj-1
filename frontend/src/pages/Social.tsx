@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import type { Badge } from "../badge/badge";
@@ -10,44 +10,106 @@ import { boardRows } from "../components/boardRows";
 import { PauseIcon, PlayIcon } from "../components/icons";
 import Loading from "../components/Loading";
 import { useAutoAdvance } from "../components/useAutoAdvance";
+import { getFriendsBoard } from "../friends/friendService";
+import { openFriends } from "../friends/openFriends";
+import PlayerSheet from "../friends/PlayerSheet";
+import { FOLLOWING_CHANGED } from "../friends/useFollowing";
 import {
   getLeaderboard,
   type Leaderboard,
+  type LeaderboardEntry,
   type LeaderboardPeriod,
 } from "../leetcode/leaderboardService";
 import MyLeagues from "../leagues/MyLeagues";
 
-// Slide order. The API only has the weekly board so far. When monthly and
-// all-time exist, add them back above it: { value: "all", label: "All time",
-// empty: "No scores yet" } and { value: "month", label: "This month", empty:
-// "No scores this month yet" }. All time goes first, so it's the board you see
-// when the page opens.
+// Global slide order. The API only has the weekly board so far. When monthly
+// and all-time exist, add them back above it: { value: "all", label: "All
+// time", empty: "No scores yet" } and { value: "month", label: "This month",
+// empty: "No scores this month yet" }. All time goes first, so it's the board
+// you see when the page opens.
 const PERIODS: { value: LeaderboardPeriod; label: string; empty: string }[] = [
   { value: "week", label: "This week", empty: "No scores this week yet" },
 ];
 
+// One carousel slide. Each carries its own title and empty message, since
+// the Friends slide isn't a time period.
+type SlideData = {
+  key: string;
+  label: string;
+  board: Leaderboard;
+  // Shown instead of the rows when there's nobody to rank.
+  empty: { title: string; message: string; action?: ReactNode } | null;
+};
+
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; boards: Leaderboard[] };
+  | { status: "ready"; slides: SlideData[] };
 
-// The Social tab (#93): the global board on top, then your leagues (2-13).
-// Friends come later.
+// The Social tab (#93): the boards on top (global, then friends), then your
+// leagues (2-13). Following lives in the Friends sheet in the top bar.
 export default function SocialPage() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   // Badges aren't on the server yet, so your own comes from this browser.
   const { badge: myBadge } = useMyBadge(user?.id);
-  // Bumped by "Try again" to refetch.
+  // Bumped by "Try again", and after a follow or unfollow, to refetch.
   const [reloads, setReloads] = useState(0);
   const [state, setState] = useState<State>({ status: "loading" });
+  // The player whose name was tapped, for the Follow sheet.
+  const [player, setPlayer] = useState<LeaderboardEntry | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     // Ignore the answer if the user left the page before it arrived.
     let cancelled = false;
-    Promise.all(PERIODS.map((p) => getLeaderboard(p.value))).then(
-      (boards) => {
-        if (!cancelled) setState({ status: "ready", boards });
+    Promise.all([
+      Promise.all(PERIODS.map((p) => getLeaderboard(p.value))),
+      // A broken friends board shouldn't hide the global one.
+      getFriendsBoard(user).catch(() => null),
+    ]).then(
+      ([boards, friendsBoard]) => {
+        if (cancelled) return;
+        const slides: SlideData[] = boards.map((board, i) => ({
+          key: PERIODS[i].value,
+          label: PERIODS[i].label,
+          board,
+          empty:
+            board.top.length === 0
+              ? {
+                  title: PERIODS[i].empty,
+                  message:
+                    "Solve a problem on LeetCode and sync to get on the board.",
+                }
+              : null,
+        }));
+        if (friendsBoard) {
+          const followsAnyone = friendsBoard.top.some(
+            (e) => e.userId !== user.id,
+          );
+          slides.push({
+            key: "friends",
+            label: "Friends this week",
+            board: friendsBoard,
+            empty: followsAnyone
+              ? null
+              : {
+                  title: "No friends here yet",
+                  message:
+                    "Follow people, or tap a name on another board, to compete with them here.",
+                  action: (
+                    <button
+                      type="button"
+                      className="button button-secondary"
+                      onClick={() => openFriends()}
+                    >
+                      Find friends
+                    </button>
+                  ),
+                },
+          });
+        }
+        setState({ status: "ready", slides });
       },
       (err: unknown) => {
         if (cancelled) return;
@@ -60,7 +122,15 @@ export default function SocialPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloads]);
+  }, [user, reloads]);
+
+  // Following someone changes the Friends slide, so refetch quietly (no
+  // spinner; the old boards stay up until the new ones arrive).
+  useEffect(() => {
+    const refetch = () => setReloads((n) => n + 1);
+    window.addEventListener(FOLLOWING_CHANGED, refetch);
+    return () => window.removeEventListener(FOLLOWING_CHANGED, refetch);
+  }, []);
 
   const retry = () => {
     setState({ status: "loading" });
@@ -71,7 +141,7 @@ export default function SocialPage() {
     <>
       <section className="leaderboard" aria-labelledby="leaderboard-title">
         <header className="leaderboard-header">
-          <h2 id="leaderboard-title">Global</h2>
+          <h2 id="leaderboard-title">Leaderboards</h2>
         </header>
         {state.status === "loading" && (
           <Loading label="Loading the leaderboard…" />
@@ -80,27 +150,37 @@ export default function SocialPage() {
           <ErrorMessage message={state.message} onRetry={retry} />
         )}
         {state.status === "ready" && (
-          <Carousel boards={state.boards} userId={userId} myBadge={myBadge} />
+          <Carousel
+            slides={state.slides}
+            userId={userId}
+            myBadge={myBadge}
+            onPlayerClick={setPlayer}
+          />
         )}
       </section>
       <MyLeagues />
+      {player && (
+        <PlayerSheet player={player} onClose={() => setPlayer(null)} />
+      )}
     </>
   );
 }
 
 function Carousel({
-  boards,
+  slides,
   userId,
   myBadge,
+  onPlayerClick,
 }: {
-  boards: Leaderboard[];
+  slides: SlideData[];
   userId: string;
   myBadge: Badge;
+  onPlayerClick: (entry: LeaderboardEntry) => void;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const { index, goTo, paused, togglePaused } = useAutoAdvance(
     trackRef,
-    boards.length,
+    slides.length,
   );
 
   return (
@@ -114,26 +194,27 @@ function Carousel({
         tabIndex={0}
         aria-label="Leaderboards"
       >
-        {boards.map((board, i) => (
+        {slides.map((slide, i) => (
           <Slide
-            key={board.period}
-            board={board}
+            key={slide.key}
+            slide={slide}
             userId={userId}
             myBadge={myBadge}
-            position={`${i + 1} of ${boards.length}`}
+            position={`${i + 1} of ${slides.length}`}
+            onPlayerClick={onPlayerClick}
           />
         ))}
       </div>
 
-      {boards.length > 1 && (
+      {slides.length > 1 && (
         <div className="leaderboard-controls">
           <div className="leaderboard-dots">
-            {PERIODS.map((p, i) => (
+            {slides.map((s, i) => (
               <button
-                key={p.value}
+                key={s.key}
                 type="button"
                 className="leaderboard-dot"
-                aria-label={`Show ${p.label}`}
+                aria-label={`Show ${s.label}`}
                 aria-current={index === i ? "true" : undefined}
                 onClick={() => goTo(i)}
               />
@@ -154,18 +235,19 @@ function Carousel({
 }
 
 function Slide({
-  board,
+  slide,
   userId,
   myBadge,
   position,
+  onPlayerClick,
 }: {
-  board: Leaderboard;
+  slide: SlideData;
   userId: string;
   myBadge: Badge;
   position: string;
+  onPlayerClick: (entry: LeaderboardEntry) => void;
 }) {
-  const period = PERIODS.find((p) => p.value === board.period)!;
-  const { top, you } = board;
+  const { top, you } = slide.board;
 
   // Top 3 plus your spot (or 4th), see boardRows.
   const rows = boardRows(top, you);
@@ -174,13 +256,14 @@ function Slide({
     <article
       className="leaderboard-slide"
       aria-roledescription="slide"
-      aria-label={`${period.label}, ${position}`}
+      aria-label={`${slide.label}, ${position}`}
     >
-      <h3>{period.label}</h3>
-      {top.length === 0 ? (
+      <h3>{slide.label}</h3>
+      {slide.empty ? (
         <EmptyState
-          title={period.empty}
-          message="Solve a problem on LeetCode and sync to get on the board."
+          title={slide.empty.title}
+          message={slide.empty.message}
+          action={slide.empty.action}
         />
       ) : (
         <>
@@ -194,6 +277,7 @@ function Slide({
                 // Your row when you're far down (e.g. 12th) gets a gap
                 // above it, so it doesn't read as if you're 4th.
                 afterGap={entry.rank > 4}
+                onPlayerClick={onPlayerClick}
               />
             ))}
           </ol>
