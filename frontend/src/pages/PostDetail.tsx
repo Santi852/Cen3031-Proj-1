@@ -2,18 +2,17 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import CodeBlock from "../components/CodeBlock";
+import Comments from "../components/Comments";
 import ErrorMessage from "../components/ErrorMessage";
-import { HeartIcon } from "../components/icons";
 import Loading from "../components/Loading";
 import PostMeta from "../components/PostMeta";
+import VoteButton from "../components/VoteButton";
 import {
   deletePost,
   getPost,
   LANGUAGES,
   labelFor,
-  LIKES_ENABLED,
   PostError,
-  setLiked,
   type Post,
 } from "../leetcode/postService";
 
@@ -21,7 +20,8 @@ type Result =
   | { key: string; ok: true; post: Post }
   | { key: string; ok: false; message: string; canRetry: boolean };
 
-// One solution post, in full (1-23). Its author also gets Edit and Delete.
+// One solution post, in full (1-23), with upvotes and comments (2-19). Its
+// author also gets Edit and Delete.
 export default function PostDetail() {
   const { slug = "", postId = "" } = useParams();
   const { user } = useAuth();
@@ -84,7 +84,7 @@ export default function PostDetail() {
       <header className="post-header">
         <div className="post-title-row">
           <h2 id="post-title">{post.title}</h2>
-          {LIKES_ENABLED && <LikeButton slug={slug} post={post} />}
+          <VoteButton post={post} />
         </div>
         <PostMeta post={post} />
       </header>
@@ -95,6 +95,7 @@ export default function PostDetail() {
         label={`${labelFor(LANGUAGES, post.language)} code`}
       />
       {isOwner && <OwnerActions slug={slug} post={post} />}
+      <Comments postId={post.id} />
     </section>
   );
 }
@@ -162,37 +163,5 @@ function OwnerActions({ slug, post }: { slug: string; post: Post }) {
         </>
       )}
     </div>
-  );
-}
-
-// The heart fills in right away and is undone if saving fails, so tapping
-// it never feels slow.
-function LikeButton({ slug, post }: { slug: string; post: Post }) {
-  const [liked, setLikedState] = useState(post.liked);
-  const [failed, setFailed] = useState(false);
-
-  async function toggle() {
-    const next = !liked;
-    setLikedState(next);
-    setFailed(false);
-    try {
-      await setLiked(slug, post.id, next);
-    } catch {
-      setLikedState(!next);
-      setFailed(true);
-    }
-  }
-
-  return (
-    <button
-      type="button"
-      className={liked ? "like-button is-liked" : "like-button"}
-      aria-label="Like this solution"
-      aria-pressed={liked}
-      title={failed ? "Couldn't save your like. Try again." : undefined}
-      onClick={() => void toggle()}
-    >
-      <HeartIcon />
-    </button>
   );
 }

@@ -144,11 +144,20 @@ export function ArrowUpRightIcon() {
   );
 }
 
-// Outline by default; CSS fills it in once you've liked the post.
-export function HeartIcon() {
+// Upvote (2-19). Outline by default; CSS fills it in once you've voted.
+export function UpvoteIcon() {
   return (
     <Icon>
-      <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" />
+      <path d="M12 5l7 9h-4v5H9v-5H5z" />
+    </Icon>
+  );
+}
+
+// Comment count on post cards: a speech bubble.
+export function CommentIcon() {
+  return (
+    <Icon>
+      <path d="M20 12a8 8 0 0 1-11.7 7.1L4 20l1-4.1A8 8 0 1 1 20 12z" />
     </Icon>
   );
 }

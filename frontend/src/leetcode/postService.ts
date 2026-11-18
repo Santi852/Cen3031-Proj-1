@@ -1,7 +1,9 @@
 // Solution posts service, backed by Matias's 1-21 (create / edit / delete your
 // own post, required language and Time + Space Big-O, unlocked users only)
 // behind the 1-18 gate.
+import { getCurrentUser } from "../auth/authService";
 import { ApiError, apiFetch } from "./apiClient";
+import { getStats } from "./postSocialService";
 
 // The allowed values. 1-21 stores language and Big-O as enums, so these
 // lists must match the API's exactly.
@@ -47,10 +49,11 @@ export type Post = {
   comment: string;
   createdAt: string; // ISO timestamp
   updatedAt: string | null; // null until the first edit
-  // Whether you liked it. Likes are new (not in 1-21): the API needs to
-  // store one like per user per post and send this back for the viewer.
-  // Always false until then.
-  liked: boolean;
+  // Upvotes and comments (2-19). Not in 1-21's responses yet; filled in from
+  // the postSocialService stub until 2-17 adds them.
+  votes: number;
+  voted: boolean; // whether you upvoted it
+  commentCount: number;
 };
 
 // What the editor sends. Empty strings mean "not picked yet"; the editor
@@ -82,9 +85,6 @@ export function labelFor(
   return list.find((item) => item.value === value)?.label ?? value;
 }
 
-// Likes have no API yet, so the page hides the heart while this is false.
-export const LIKES_ENABLED = false;
-
 function toPostError(err: unknown) {
   if (!(err instanceof ApiError)) throw err;
   switch (err.kind) {
@@ -103,7 +103,9 @@ function toPostError(err: unknown) {
   }
 }
 
-type ApiPost = Omit<Post, "updatedAt" | "liked"> & { updatedAt: string };
+type ApiPost = Omit<Post, "updatedAt" | "votes" | "voted" | "commentCount"> & {
+  updatedAt: string;
+};
 
 // The server sets updatedAt on creation too; the page expects null until the
 // first edit, so it can show "(edited)".
@@ -111,8 +113,22 @@ function fromApi(post: ApiPost): Post {
   return {
     ...post,
     updatedAt: post.updatedAt === post.createdAt ? null : post.updatedAt,
-    liked: false,
+    votes: 0,
+    voted: false,
+    commentCount: 0,
   };
+}
+
+// Adds votes and comment counts from the stub. When 2-17 sends them with
+// the posts, this goes away.
+async function withStats(posts: Post[]): Promise<Post[]> {
+  const me = getCurrentUser();
+  if (!me) return posts;
+  const stats = await getStats(
+    posts.map((p) => p.id),
+    me,
+  );
+  return posts.map((p) => ({ ...p, ...stats.get(p.id) }));
 }
 
 const postsPath = (slug: string) =>
@@ -140,14 +156,46 @@ function toBody(draft: PostDraft) {
 // Newest first. The API sends at most 50 at a time.
 export function listPosts(slug: string): Promise<Post[]> {
   return request(async () =>
-    (await apiFetch<ApiPost[]>(postsPath(slug))).map(fromApi),
+    withStats((await apiFetch<ApiPost[]>(postsPath(slug))).map(fromApi)),
   );
 }
 
 export function getPost(slug: string, id: string): Promise<Post> {
-  return request(async () =>
-    fromApi(await apiFetch<ApiPost>(`${postsPath(slug)}/${id}`)),
-  );
+  return request(async () => {
+    const post = fromApi(await apiFetch<ApiPost>(`${postsPath(slug)}/${id}`));
+    return (await withStats([post]))[0];
+  });
+}
+
+// ---- Sorting (2-18) --------------------------------------------------------
+
+export const POST_SORTS = [
+  { value: "votes", label: "Most votes" },
+  { value: "newest", label: "Newest" },
+  { value: "complexity", label: "Best time complexity" },
+] as const;
+
+export type PostSort = (typeof POST_SORTS)[number]["value"];
+
+// Done here for now; 2-18 moves it to the API (?sort=votes|newest|complexity)
+// once posts are paged.
+// - votes (the default): most upvotes first, then newest.
+// - newest: by creation date.
+// - complexity: fastest Big-O first (the order of COMPLEXITIES), then less
+//   space, then most votes.
+export function sortPosts(posts: Post[], sort: PostSort): Post[] {
+  const newest = (a: Post, b: Post) => b.createdAt.localeCompare(a.createdAt);
+  const rank = (c: Complexity) => COMPLEXITIES.findIndex((x) => x.value === c);
+  const compare: Record<PostSort, (a: Post, b: Post) => number> = {
+    votes: (a, b) => b.votes - a.votes || newest(a, b),
+    newest,
+    complexity: (a, b) =>
+      rank(a.timeComplexity) - rank(b.timeComplexity) ||
+      rank(a.spaceComplexity) - rank(b.spaceComplexity) ||
+      b.votes - a.votes ||
+      newest(a, b),
+  };
+  return [...posts].sort(compare[sort]);
 }
 
 export function createPost(slug: string, draft: PostDraft): Promise<Post> {
@@ -181,12 +229,3 @@ export function deletePost(slug: string, id: string): Promise<void> {
     apiFetch<void>(`${postsPath(slug)}/${id}`, { method: "DELETE" }),
   );
 }
-
-// Nothing calls this while LIKES_ENABLED is false.
-export const setLiked: (
-  slug: string,
-  id: string,
-  liked: boolean,
-) => Promise<void> = async () => {
-  throw new PostError("unavailable", "Likes aren't available yet.");
-};
